@@ -15,7 +15,7 @@ COPY package*.json ./
 
 # DIRECTIVE: Installe les dépendances avec 'npm ci' (plus rapide et strict que npm install)
 # YOUR CODE HERE
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # DIRECTIVE: Copie tout le reste du code source
 # YOUR CODE HERE
