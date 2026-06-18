@@ -37,7 +37,7 @@ FROM nginx:alpine
 # DIRECTIVE: Copie les fichiers compilés depuis l'étape 'builder' vers le dossier de Nginx
 # Syntaxe : COPY --from=builder /app/dist/fishcam-frontend/browser /usr/share/nginx/html
 # YOUR CODE HERE
-COPY --from=builder /app/dist/fishcam-frontend/browser /usr/share/nginx/html
+COPY --from=builder /app/dist/fish*-frontend/* /usr/share/nginx/html/
 
 # DIRECTIVE: Expose le port 80
 # YOUR CODE HERE
