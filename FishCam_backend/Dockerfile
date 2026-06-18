@@ -1,24 +1,18 @@
-# ─── SKELETON: Dockerfile (Backend Spring Boot) ───────────────────────────
-
-# DIRECTIVE: Utilise l'image de base 'eclipse-temurin:17-jre-alpine'
-# YOUR CODE HERE
-FROM eclipse-temurin:17-jre-alpine
-
-# DIRECTIVE: Définis le répertoire de travail sur '/app'
-# YOUR CODE HERE
+# ─── STAGE 1 : BUILD (Compilation avec Maven) ───
+FROM maven:3.9-eclipse-temurin-17 AS builder
 WORKDIR /app
+# On copie d'abord le pom.xml pour optimiser le cache Docker
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+# On copie le code source et on compile
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# DIRECTIVE: Copie le fichier JAR généré par Maven depuis ton PC vers le container.
-# Le fichier source est 'target/*.jar' (l'étoile permet de prendre le jar peu importe sa version exacte).
-# Le fichier de destination dans le container sera 'app.jar'.
-# YOUR CODE HERE
-COPY target/*.jar app.jar
-
-# DIRECTIVE: Expose le port 8080 (le port par défaut de Spring Boot)
-# YOUR CODE HERE
+# ─── STAGE 2 : RUN (Exécution légère) ───
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+# On récupère LE fichier .jar généré à l'étape 1
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 8080
-
-# DIRECTIVE: Définis la commande de démarrage (ENTRYPOINT).
-# Elle doit exécuter un tableau JSON : ["java", "-jar", "app.jar"]
-# YOUR CODE HERE
+# On lance l'application avec les limites de RAM
 ENTRYPOINT ["sh", "-c", "java ${JAVA_OPTS} -jar app.jar"]
