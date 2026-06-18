@@ -1,0 +1,73 @@
+# ─── SKELETON: docker-compose.yml ───────────────────────────
+version: '3.9'
+
+services:
+  # ─── 1. BASE DE DONNÉES ───
+  fishcam-db:
+    # DIRECTIVE: Utilise l'image postgres:16-alpine
+    image: postgres:16-alpine
+    
+    container_name: fishcam-db
+    restart: always
+    # DIRECTIVE: Définis les variables d'environnement POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD
+    # Utilise des variables (ex: ${DB_NAME}) qui seront lues depuis un fichier .env
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    
+    # DIRECTIVE: Monte un volume nommé 'pgdata' vers '/var/lib/postgresql/data' pour ne pas perdre les données
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    
+    # DIRECTIVE: Ajoute un healthcheck pour vérifier que la DB est prête
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─── 2. BACKEND SPRING BOOT ───
+  fishcam-backend:
+    # DIRECTIVE: Dis à Docker de construire l'image à partir du dossier backend (build: ./FishCam_backend)
+    build: ./FishCam_backend
+    
+    container_name: fishcam-backend
+    restart: always
+    # DIRECTIVE: Fais dépendre ce service de 'fishcam-db' en attendant qu'il soit 'healthy' (condition: service_healthy)
+    depends_on:
+      fishcam-db:
+        condition: service_healthy
+    
+    # DIRECTIVE: Passe les variables d'environnement à Spring Boot
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://fishcam-db:5432/${DB_NAME}
+      - SPRING_DATASOURCE_USERNAME=${DB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    
+    # DIRECTIVE: Limite la RAM de ce container à 1 Go (deploy -> resources -> limits -> memory: 1G)
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  # ─── 3. FRONTEND ANGULAR + NGINX ───
+  fishcam-frontend:
+    # DIRECTIVE: Dis à Docker de construire l'image à partir du dossier frontend (build: ./FishCam_frontend)
+    build: ./FishCam_frontend
+    
+    container_name: fishcam-frontend
+    restart: always
+    # DIRECTIVE: Expose le port 80 du container sur le port 80 de ton vieux PC (ports: - "80:80")
+    ports:
+      - "80:80"
+    
+    # DIRECTIVE: Fais dépendre ce service de 'fishcam-backend'
+    depends_on:
+      - fishcam-backend
+
+# ─── DÉCLARATION DES VOLUMES ───
+volumes:
+  # DIRECTIVE: Déclare le volume 'pgdata'
+  pgdata:
