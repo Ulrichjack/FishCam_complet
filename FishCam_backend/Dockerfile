@@ -10,6 +10,9 @@ RUN mvn clean package -DskipTests
 
 # ─── STAGE 2 : RUN (Exécution légère) ───
 FROM eclipse-temurin:17-jre-alpine
+
+RUN apk add --no-cache postgresql-client
+
 WORKDIR /app
 # On récupère LE fichier .jar généré à l'étape 1
 COPY --from=builder /app/target/*.jar app.jar
