@@ -18,4 +18,4 @@ echo "🧹 Nettoyage des anciennes images Docker inutilisées (pour libérer de 
 docker image prune -f
 
 echo "✅ Déploiement terminé avec succès !"
-echo "🌐 L'application est accessible sur http://192.168.8.100"
+echo "🌐 L'application est accessible sur http://172.20.10.5/"

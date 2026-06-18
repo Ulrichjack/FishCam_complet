@@ -17,7 +17,7 @@ import { NgClass } from '@angular/common';
                'border-fc-yellow': toast.type === 'WARNING',
                'border-blue-200': toast.type === 'INFO'
              }">
-          
+
           <div class="flex items-start p-4"
                [ngClass]="{
                  'bg-fc-green-light': toast.type === 'SUCCESS',
@@ -25,11 +25,11 @@ import { NgClass } from '@angular/common';
                  'bg-fc-yellow-light': toast.type === 'WARNING',
                  'bg-blue-50': toast.type === 'INFO'
                }">
-            
+
             <!-- Icon -->
             <div class="shrink-0 mt-0.5">
               @if (toast.type === 'SUCCESS') { <lucide-icon name="circle-check" class="h-5 w-5 text-fc-green"></lucide-icon> }
-              @if (toast.type === 'ERROR') { <lucide-icon name="x-circle" class="h-5 w-5 text-fc-red"></lucide-icon> }
+              @if (toast.type === 'ERROR') { <lucide-icon name="circle-x" class="h-5 w-5 text-fc-red"></lucide-icon> }
               @if (toast.type === 'WARNING') { <lucide-icon name="triangle-alert" class="h-5 w-5 text-fc-yellow-dark"></lucide-icon> }
               @if (toast.type === 'INFO') { <lucide-icon name="info" class="h-5 w-5 text-blue-500"></lucide-icon> }
             </div>
