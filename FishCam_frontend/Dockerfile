@@ -26,6 +26,9 @@ COPY . .
 # YOUR CODE HERE
 RUN npm run build -- --configuration production
 
+
+RUN ls -la dist/ && ls -la dist/*
+
 # ─── STAGE 2 : PRODUCTION ───
 # DIRECTIVE: Utilise 'nginx:alpine'
 # YOUR CODE HERE
