@@ -37,7 +37,7 @@ FROM nginx:alpine
 # DIRECTIVE: Copie les fichiers compilés depuis l'étape 'builder' vers le dossier de Nginx
 # Syntaxe : COPY --from=builder /app/dist/fishcam-frontend/browser /usr/share/nginx/html
 # YOUR CODE HERE
-COPY --from=builder /app/dist/fish*-frontend/* /usr/share/nginx/html/
+COPY --from=builder /app/dist/fish-cam-frontend /usr/share/nginx/html
 
 # DIRECTIVE: Expose le port 80
 # YOUR CODE HERE
@@ -46,4 +46,4 @@ EXPOSE 80
 # Supprime la configuration Nginx par défaut
 RUN rm /etc/nginx/conf.d/default.conf
 # Copie notre configuration personnalisée
-COPY nginx.conf /etc/nginx/conf.d/
+COPY nginx.conf /etc/nginx/conf.d/default.conf
