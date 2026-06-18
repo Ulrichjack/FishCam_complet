@@ -1,0 +1,71 @@
+<div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden sticky top-24">
+  
+  <!-- Header Reçu -->
+  <div class="bg-gray-900 text-white p-6 text-center">
+    <h2 class="text-xl font-bold tracking-wider"> FISH-CAM</h2>
+    <!-- REPLACE HARDCODED TEXT WITH THIS: -->
+    <p class="text-sm text-gray-300 mt-1">{{ poissonnerieNom() }}</p>
+    <p class="text-xs text-gray-400">Cameroun</p>
+  </div>
+
+  <!-- Infos Facture -->
+  <div class="p-6 border-b border-gray-100 bg-gray-50/50">
+    <h3 class="font-bold text-gray-900 mb-4 uppercase tracking-wider text-sm">Facture d'achat</h3>
+    <div class="space-y-2 text-sm">
+      <!-- DIRECTIVE: Bind dateAchat, fournisseurNom, and livreurNom here -->
+      <p class="flex justify-between"><span class="text-gray-500">Date :</span> <span class="font-medium text-gray-900"> <!-- YOUR CODE HERE (use date pipe) --> {{ dateAchat() | date:'dd/MM/yyyy' }} </span></p>
+      <p class="flex justify-between"><span class="text-gray-500">Fournisseur :</span> <span class="font-medium text-gray-900"> <!-- YOUR CODE HERE --> {{ fournisseurNom() }} </span></p>
+    </div>
+  </div>
+
+  <!-- Table des lignes -->
+  <div class="p-6">
+    <table class="w-full text-sm text-left">
+      <thead class="text-xs text-gray-500 uppercase border-b border-gray-200">
+        <tr>
+          <th class="pb-3 font-medium">Produit</th>
+          <th class="pb-3 font-medium text-center">Qté</th>
+          <th class="pb-3 font-medium text-right">Achat</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <!-- DIRECTIVE: Loop over lignes() using @for -->
+        <!-- YOUR CODE HERE (@for) -->
+         @for (ligne of lignes(); track $index) {
+          <tr>
+            <td class="py-3 font-medium text-gray-900">{{ ligne.produitNom }}<br><span class="text-xs text-gray-500 font-normal">{{ ligne.poidsKg }} kg</span></td>
+            <td class="py-3 text-center text-gray-700">{{ ligne.quantiteCartons }}</td>
+            <!-- En FCFA on n'affiche pas les décimales, donc on utilise juste le pipe number normal -->
+            <td class="py-3 text-right font-medium text-gray-900">{{ ligne.montantCarton | currencyFcfa }}</td>
+          </tr>
+        }
+        <!-- Empty state if no lines -->
+        @if (lignes().length === 0) {
+          <tr>
+            <td colspan="3" class="py-8 text-center text-gray-400 italic">Aucun produit ajouté</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Totaux -->
+  <div class="bg-gray-50 p-6 border-t border-gray-200 space-y-3">
+    <div class="flex justify-between text-sm">
+      <span class="text-gray-600">Total Achat</span>
+      <span class="font-bold text-gray-900">  {{ totalAchat() | currencyFcfa }} </span>
+    </div>
+    <div class="flex justify-between text-sm">
+      <span class="text-gray-600">Vente Prévisible</span>
+      <span class="font-bold text-gray-900"> {{ totalVente() | currencyFcfa }} </span>
+    </div>
+    <div class="flex justify-between pt-3 border-t border-gray-200">
+      <span class="font-bold text-gray-900">Bénéfice Prévu</span>
+      <!-- DIRECTIVE: Bind benefice() and use [ngClass] to make it green if > 0, red if < 0 -->
+      <span class="font-bold" [ngClass]="{'text-fc-green': benefice() > 0, 'text-fc-red': benefice() < 0}"> 
+         {{ benefice() > 0 ? '+' : '' }}{{ benefice() | currencyFcfa }} 
+      </span>
+    </div>
+  </div>
+
+</div>

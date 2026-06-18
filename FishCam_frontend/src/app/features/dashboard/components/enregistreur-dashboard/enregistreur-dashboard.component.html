@@ -1,0 +1,67 @@
+<div class="flex flex-col gap-6">
+  
+  <!-- 1. GREETING -->
+  <app-greeting-header [userName]="authStore.user()?.firstName || 'Utilisateur'"></app-greeting-header>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <!-- LEFT COLUMN -->
+    <div class="lg:col-span-2 flex flex-col gap-6">
+      
+      <!-- QUICK ACTIONS -->
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Actions Rapides</h3>
+        <div class="flex flex-wrap gap-4">
+           <button class="bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2 rounded-lg transition-colors"
+            routerLink="/factures/new">
+                Nouvelle Facture
+           </button>
+
+           <button class="bg-fc-red hover:bg-fc-red-dark text-white px-4 py-2 rounded-lg transition-colors"
+            routerLink="/clients">
+                Nouvel Emprunt Client
+           </button>
+        </div>
+      </div>
+
+      <!-- FACTURES DU JOUR -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h3 class="font-bold text-gray-900">Factures du jour</h3>
+        </div>
+        
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="bg-gray-50 text-gray-500">
+              <tr>
+                <th class="px-6 py-3 font-medium">Date</th>
+                <th class="px-6 py-3 font-medium">Fournisseur</th>
+                <th class="px-6 py-3 font-medium">Total Achat</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+              @for(facture of dashboardStore.facturesDuJour(); track facture.id) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">{{ facture.dateAchat | date:'dd/MM/yyyy' }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{{ facture.fournisseurNom }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">{{ facture.totalAchat | currencyFcfa }} </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="3" class="px-6 py-8 text-center text-gray-500">Aucune facture aujourd'hui</td>
+                </tr> 
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div class="lg:col-span-1">
+      <app-notification-preview></app-notification-preview>
+    </div>
+
+  </div>
+</div>

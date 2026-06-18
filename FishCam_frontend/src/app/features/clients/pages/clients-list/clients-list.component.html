@@ -1,0 +1,203 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Clients</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez vos clients, leurs comptes courants et leurs épargnes.</p>
+    </div>
+
+    <button class="inline-flex items-center justify-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm"
+    (click)="openCreatePanel()">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      Nouveau Client
+    </button>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <!-- Search Bar & Filters -->
+    <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row gap-4 justify-between">
+      <div class="relative w-full max-w-md">
+        <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-icon>
+        <input type="text" (input)="onSearch($event)" placeholder="Rechercher par nom ou prénom..." class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
+      </div>
+
+      <select class="border border-gray-300 rounded-lg text-sm py-2 px-3 focus:ring-fc-green outline-none bg-white"
+              (change)="onFilterChange($event)">
+        <option value="active">Clients Actifs</option>
+        <option value="inactive">Clients Désactivés</option>
+      </select>
+    </div>
+
+    <!-- The Table Area -->
+    <div class="block custom-scrollbar w-full max-w-full overflow-x-auto scroll-smooth">
+      
+      <!-- 1. ÉTAT DE CHARGEMENT -->
+      @if (clientStore.isLoading() && (!clientStore.clientsPage() || clientStore.clientsPage()?.content?.length === 0)) {
+        <div class="p-6">
+          <app-loading-skeleton [rows]="5"></app-loading-skeleton>
+        </div>
+      } 
+      
+      <!-- 2. ÉTAT D'ERREUR -->
+      @else if (clientStore.error()) {
+        <app-error-state 
+          [error]="clientStore.error()!" 
+          (retryClicked)="clientStore.loadClients(authStore.activePoissonnerieId()!, 0)">
+        </app-error-state>
+      } 
+      
+      <!-- 3. ÉTAT VIDE -->
+      @else if (clientStore.clientsPage()?.content?.length === 0) {
+        <app-empty-state 
+          icon="users" 
+          title="Aucun client trouvé" 
+          message="Commencez par ajouter un nouveau client dans le système."
+          actionLabel="Nouveau Client"
+          (actionClicked)="openCreatePanel()">
+        </app-empty-state>
+      } 
+      
+      <!-- 4. DONNÉES (LA TABLE) -->
+      @else {
+        <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+          <thead>
+            <tr>
+              <th>Client</th>
+              <th>Téléphone</th>
+              <th>Quartier</th>
+              <th>Solde Compte Courant</th>
+              <th class="text-center">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (client of clientStore.clientsPage()?.content; track client.id) {
+              <tr class="group transition-colors">
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-fc-green-light text-fc-green font-bold text-sm">
+                      {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900">{{ client.firstName }} {{ client.lastName }}</p>
+                      <p class="text-[13px] text-gray-500">ID: #{{ client.id }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <p class="font-medium text-gray-900">{{ client.phone }}</p>
+                </td>
+                <td>
+                  <p class="text-gray-500">{{ client.quartier || '-' }}</p>
+                </td>
+                <td>
+                  <app-status-badge [solde]="client.soldeCompteCourant || 0"></app-status-badge>
+                </td>
+                <td class="text-right py-4 pr-6">
+                  <div class="flex items-center  gap-2">
+                    @if (authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere() ) {
+                      <button [routerLink]="['/clients', client.id]" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-yellow-dark bg-fc-yellow-light hover:bg-fc-yellow hover:text-white rounded-md transition-colors" title="Transaction">
+                        <lucide-icon name="arrow-left-right" class="h-3.5 w-3.5"></lucide-icon>
+                        <span class="hidden xl:inline">Transac.</span>
+                      </button>
+                    }
+
+                    <button [routerLink]="['/clients', client.id]" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md transition-colors" title="Détails">
+                      <lucide-icon name="eye" class="h-3.5 w-3.5"></lucide-icon>
+                      <span class="hidden xl:inline">Détails</span>
+                    </button>
+
+                    @if (authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere() ) {
+                      <button (click)="openEditPanel(client)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="Modifier">
+                        <lucide-icon name="pencil" class="h-3.5 w-3.5"></lucide-icon>
+                        <span class="hidden xl:inline">Modifier</span>
+                      </button>
+                    }
+
+                    @if (authStore.isPatron() || authStore.isSuperAdmin()) {
+                      @if (client.active) {
+                        <button (click)="confirmDelete(client)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-red bg-fc-red-light hover:bg-fc-red hover:text-white rounded-md transition-colors" title="Désactiver">
+                          <lucide-icon name="trash-2" class="h-3.5 w-3.5"></lucide-icon>
+                          <span class="hidden xl:inline">Désactiver</span>
+                        </button>
+                      } @else {
+                        <button (click)="reactivateClient(client.id)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md transition-colors" title="Réactiver">
+                          <lucide-icon name="circle-check" class="h-3.5 w-3.5"></lucide-icon>
+                          <span class="hidden xl:inline">Réactiver</span>
+                        </button>
+                      }
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex w-full flex-row justify-between items-center gap-6 p-4 border-t border-gray-200">
+      <div class="flex flex-row justify-start items-center gap-4 w-auto shrink-0">
+        <p class="hidden font-normal text-gray-600 md:block text-sm">Lignes par page</p>
+        <select [ngModel]="pageSize()" (ngModelChange)="onPageSizeChange($event)" class="border border-gray-300 rounded-md text-sm py-1 px-2 focus:ring-fc-green focus:border-fc-green outline-none">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+        </select>
+      </div>
+
+      <div class="flex w-full flex-row justify-end items-center gap-4">
+        <p class="hidden font-normal text-gray-600 sm:block text-sm">
+          Page {{ (clientStore.clientsPage()?.page?.number ?? clientStore.clientsPage()?.number ?? 0) + 1 }} sur {{ clientStore.clientsPage()?.page?.totalPages ?? clientStore.clientsPage()?.totalPages ?? 1 }}
+        </p>
+
+        <div class="flex gap-2">
+          <button
+            [disabled]="clientStore.clientsPage()?.first"
+            (click)="previousPage()"
+            class="inline-flex items-center justify-center p-1.5 h-8 w-8 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-fc-green disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon name="chevron-left" class="h-4 w-4"></lucide-icon>
+          </button>
+
+          <button
+            [disabled]="clientStore.clientsPage()?.last"
+            (click)="nextPage()"
+            class="inline-flex items-center justify-center p-1.5 h-8 w-8 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-fc-green disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon name="chevron-right" class="h-4 w-4"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Slide-over Panel -->
+<app-slide-over-panel
+  [isOpen]="isSlideOverOpen()"
+  [title]="clientToEdit() ? 'Modifier le client' : 'Nouveau Client'"
+  (closed)="isSlideOverOpen.set(false)">
+  @if (clientStore.error()){
+    <div class="mb-4 rounded-md bg-fc-red-light p-4">
+      <p class="text-sm text-fc-red font-medium">Erreur: {{ clientStore.error() }}</p>
+    </div>
+  }
+  <app-client-form
+    [clientToEdit]="clientToEdit()"
+    [isLoading]="clientStore.isLoading()"
+    (cancel)="isSlideOverOpen.set(false)"
+    (save)="onSaveClient($event)">
+  </app-client-form>
+</app-slide-over-panel>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen()"
+  title="Désactiver le client"
+  [message]="'Êtes-vous sûr de vouloir désactiver ' + clientToDelete()?.firstName + ' ' + clientToDelete()?.lastName + ' ?\nCette action empêchera de faire de nouvelles transactions avec ce client.'"
+  confirmText="Désactiver"
+  (cancelled)="isConfirmOpen.set(false)"
+  (confirmed)="executeDelete()">
+</app-confirm-dialog>

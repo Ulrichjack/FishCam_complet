@@ -1,0 +1,184 @@
+<aside class="flex flex-col w-64 h-full bg-white border-r border-gray-200">
+
+  <!-- Logo -->
+  <div class="h-16 flex items-center px-6 border-b border-gray-200">
+    <img src="assets/logo.svg"
+         alt="Fish-Cam"
+         class="h-40 w-auto" />
+  </div>
+
+  <!-- Navigation -->
+  <!-- Navigation -->
+  <nav class="mt-6 flex-1 overflow-y-auto flex-col space-y-2 pb-4">
+
+    <h3 class="px-6 text-xs font-semibold uppercase tracking-wider text-gray-400">Menu</h3>
+    <div class="flex flex-col">
+      <!-- Tableau de bord -->
+      <a routerLink="/dashboard" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaDashboard="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaDashboard.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="layout-dashboard" class="mr-3 h-5 w-5"></lucide-icon> Tableau de bord
+      </a>
+      <!-- Clients -->
+      <a routerLink="/clients" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaClients="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaClients.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="users" class="mr-3 h-5 w-5"></lucide-icon> Clients
+      </a>
+      <!-- Factures / Achats -->
+      <a routerLink="/factures" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaFactures="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaFactures.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="file-text" class="mr-3 h-5 w-5"></lucide-icon> Factures / Achats
+      </a>
+      <!-- Transactions -->
+        @if(authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere()) {
+          <a routerLink="/transactions" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaTransactions="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+             @if(rlaTransactions.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+             <lucide-icon name="arrow-left-right" class="mr-3 h-5 w-5"></lucide-icon> Transactions
+          
+          </a>
+          <a routerLink="/dettes" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaDettes="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaDettes.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="triangle-alert" class="mr-3 h-5 w-5"></lucide-icon> Comptes en dette
+          </a>
+        }
+         @if(authStore.isPatron() || authStore.isSuperAdmin()){
+        <!-- cloture journaliere -->
+        <a routerLink="/cloture" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaCloture="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaCloture.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="calendar-check" class="mr-3 h-5 w-5"></lucide-icon> Clôture journalière
+            </a>
+         }
+      
+
+      <!-- Livreurs -->
+      <a routerLink="/livreurs" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaLivreurs="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaLivreurs.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="truck" class="mr-3 h-5 w-5"></lucide-icon> Livreurs
+      </a>
+      <!-- Produits -->
+      <a routerLink="/produits" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaProduits="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaProduits.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="package" class="mr-3 h-5 w-5"></lucide-icon> Produits
+      </a>
+      <!-- Fournisseurs -->
+      <a routerLink="/fournisseurs" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaFournisseurs="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaFournisseurs.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="store" class="mr-3 h-5 w-5"></lucide-icon> Fournisseurs
+      </a>
+      <!-- Notifications -->
+      <a routerLink="/notifications" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaNotifications="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaNotifications.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="bell" class="mr-3 h-5 w-5"></lucide-icon> Notifications
+      </a>
+      <!-- Sauvegarde (All roles) -->
+      <a routerLink="/backup" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaBackup="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+        @if(rlaBackup.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+        <lucide-icon name="database" class="mr-3 h-5 w-5"></lucide-icon> Sauvegarde
+      </a>
+    </div>
+
+    <!-- ================================================== -->
+    <!-- SECTION GESTION & RAPPORTS AVEC DROPDOWN           -->
+    <!-- ================================================== -->
+      @if(authStore.isPatron() || authStore.isSuperAdmin()) {
+        <div class="px-6 pt-4">
+          <button (click)="toggleGestionMenu()" class="w-full flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-gray-400 focus:outline-none">
+            <span>Gestion & Rapports</span>
+            <lucide-icon name="chevron-down" class="h-4 w-4 transition-transform duration-300" [class.rotate-180]="isGestionMenuOpen()"></lucide-icon>
+          </button>
+        </div>
+
+        <!-- Le conteneur du sous-menu avec des classes pour l'animation -->
+        <div class="overflow-hidden transition-all duration-300 ease-in-out" [style.max-height.px]="isGestionMenuOpen() ? 500 : 0">
+          <div class="flex flex-col pt-2">
+           
+            
+            <!-- ... autres liens du sous-menu ... -->
+            <a routerLink="/bilans" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaBilans="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaBilans.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="chart-bar" class="mr-3 h-5 w-5"></lucide-icon> Bilans
+            </a>
+            <a routerLink="/statistiques" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaStats="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaStats.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="trending-up" class="mr-3 h-5 w-5"></lucide-icon> Statistiques
+            </a>
+            <a routerLink="/recapitulatifs" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaRecap="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaRecap.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="clipboard-list" class="mr-3 h-5 w-5"></lucide-icon> Récapitulatifs
+            </a>
+
+            <div class="flex flex-col">
+              <a routerLink="/poissonneries" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaPoissonneries="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+                @if(rlaPoissonneries.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+                <lucide-icon name="building-2" class="mr-3 h-5 w-5"></lucide-icon> Les Poissonneries
+              </a>
+            </div>
+
+            <a routerLink="/equipe" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaEquipe="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaEquipe.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="user-cog" class="mr-3 h-5 w-5"></lucide-icon> Équipe
+            </a>
+            <a routerLink="/audit" (click)="closeRequested.emit()" routerLinkActive="text-fc-green font-semibold bg-gray-50" #rlaAudit="routerLinkActive" class="relative flex items-center rounded-md px-6 py-3 font-medium capitalize text-gray-700 transition-colors duration-200 hover:bg-gray-50 hover:text-gray-900">
+              @if(rlaAudit.isActive) { <span class="absolute left-0 h-4/5 w-1 bg-fc-green rounded-r-md"></span> }
+              <lucide-icon name="scroll-text" class="mr-3 h-5 w-5"></lucide-icon> Audit logs
+            </a>
+          </div>
+        </div>
+      }
+
+    <!-- @if(authStore.isSuperAdmin()) {
+      <h3 class="px-6 pt-4 text-xs font-semibold uppercase tracking-wider text-gray-400">Super Admin</h3>
+      
+    } -->
+  </nav>
+
+     <!-- Profil & Déconnexion -->
+  <div class="p-4 border-t border-fc-border mt-auto flex flex-col gap-2">
+    
+    <button (click)="openPasswordModal()"
+            class="w-full flex items-center justify-center p-2 text-gray-700 hover:bg-gray-100 rounded-md transition-colors duration-200 font-medium">
+      <lucide-icon name="lock" class="w-4 h-4 mr-2"></lucide-icon>
+      Changer mot de passe
+    </button>
+
+    <button (click)="logout()"
+            class="w-full flex items-center justify-center p-2 text-fc-red hover:bg-red-50 rounded-md transition-colors duration-200 font-medium">
+      <lucide-icon name="log-out" class="w-4 h-4 mr-2"></lucide-icon>
+      Déconnexion
+    </button>
+  </div>
+</aside>
+
+<!-- Modale Changer Mot de Passe -->
+<app-modal [isOpen]="isPasswordModalOpen()" title="Changer mon mot de passe" (closed)="isPasswordModalOpen.set(false)">
+  <form [formGroup]="passwordForm" (ngSubmit)="onChangePassword()" class="flex flex-col gap-4">
+    
+    @if (pwdError()) {
+      <div class="p-3 bg-red-50 text-red-700 rounded-lg text-sm border border-red-200">
+        {{ pwdError() }}
+      </div>
+    }
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Ancien mot de passe *</label>
+      <input type="password" formControlName="ancienMotDePasse" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe *</label>
+      <input type="password" formControlName="nouveauMotDePasse" placeholder="Minimum 6 caractères" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Confirmer le nouveau *</label>
+      <input type="password" formControlName="confirmerMdp" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+    </div>
+
+    <div class="flex justify-end gap-3 mt-2">
+      <button type="button" (click)="isPasswordModalOpen.set(false)" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Annuler</button>
+      <button type="submit" [disabled]="isLoadingPwd() || passwordForm.invalid" class="px-4 py-2 text-sm font-medium text-white bg-fc-green hover:bg-fc-green-dark rounded-lg disabled:opacity-50 flex items-center gap-2">
+        @if (isLoadingPwd()) { <lucide-icon name="loader-circle" class="h-4 w-4 animate-spin"></lucide-icon> }
+        Modifier
+      </button>
+    </div>
+  </form>
+</app-modal>

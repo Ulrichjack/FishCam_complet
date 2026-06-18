@@ -1,0 +1,225 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Clôture Journalière</h1>
+      <p class="text-sm text-gray-500 mt-1">Vérifiez les ventes et enregistrez la caisse physique.</p>
+    </div>
+    
+    <div class="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+      <lucide-icon name="calendar" class="h-5 w-5 text-gray-400 ml-2"></lucide-icon>
+      <input type="date" [value]="selectedDate()" (change)="onDateChange($event)" 
+             class="border-none focus:ring-0 text-sm font-medium text-gray-700 outline-none cursor-pointer bg-transparent">
+    </div>
+  </div>
+
+  @if (store.isLoading() && !store.preparation()) {
+    <div class="flex justify-center py-12">
+      <lucide-icon name="loader-circle" class="h-8 w-8 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else if (store.error()) {
+    <div class="bg-fc-red-light border border-fc-red text-fc-red p-6 rounded-xl flex flex-col items-center text-center">
+      <lucide-icon name="triangle-alert" class="h-10 w-10 mb-3"></lucide-icon>
+      <p class="font-bold text-lg mb-1">Erreur</p>
+      <p>{{ store.error() }}</p>
+    </div>
+  } @else if (store.preparation(); as prep) {
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      
+      <!-- COLONNE GAUCHE : RÉSUMÉ DU SYSTÈME -->
+      <div class="flex flex-col gap-6">
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <h2 class="font-bold text-gray-900 flex items-center gap-2">
+              <lucide-icon name="chart-bar" class="h-5 w-5 text-fc-green"></lucide-icon>
+              Résumé du Système
+            </h2>
+          </div>
+          <div class="p-6 flex flex-col gap-4">
+            
+            <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+              <span class="text-gray-600">Total Achats du jour</span>
+              <span class="font-semibold text-gray-900">{{ prep.totalAchat | currencyFcfa }}</span>
+            </div>
+
+            <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+              <span class="text-gray-600">Emprunts accordés ({{ prep.nombreDettesJour }})</span>
+              <span class="font-semibold text-fc-red">{{ prep.montantDettesJour | currencyFcfa }}</span>
+            </div>
+
+            <div class="flex justify-between items-center pb-4 border-b border-gray-100">
+              <span class="text-gray-600">Remboursements reçus</span>
+              <span class="font-semibold text-fc-green">{{ prep.montantRembourseJour | currencyFcfa }}</span>
+            </div>
+
+            <div class="flex justify-between items-center pt-2">
+              <span class="text-gray-900 font-bold">Ventes Prévisibles</span>
+              <span class="text-xl font-bold text-gray-900">{{ prep.totalVentePrevisible | currencyFcfa }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARTE ÉCART EN TEMPS RÉEL -->
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-center text-center">
+          <p class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Écart de Caisse</p>
+          
+          @if (ecart() === 0) {
+            <div class="text-fc-green flex items-center gap-2">
+              <lucide-icon name="circle-check" class="h-8 w-8"></lucide-icon>
+              <span class="text-3xl font-bold">Parfait</span>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">La caisse correspond exactement aux ventes.</p>
+          } @else if (ecart() < 0) {
+            <div class="text-fc-red flex items-center gap-2">
+              <lucide-icon name="triangle-alert" class="h-8 w-8"></lucide-icon>
+              <span class="text-3xl font-bold">{{ ecart() | currencyFcfa }}</span>
+            </div>
+            <p class="text-sm text-fc-red mt-2">Manquant en caisse !</p>
+          } @else {
+            <div class="text-fc-green flex items-center gap-2">
+              <lucide-icon name="trending-up" class="h-8 w-8"></lucide-icon>
+              <span class="text-3xl font-bold">+{{ ecart() | currencyFcfa }}</span>
+            </div>
+            <p class="text-sm text-fc-green mt-2">Surplus en caisse.</p>
+          }
+        </div>
+      </div>
+
+      <!-- COLONNE DROITE : FORMULAIRE DE SAISIE -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+          <h2 class="font-bold text-gray-900 flex items-center gap-2">
+            <lucide-icon name="wallet" class="h-5 w-5 text-fc-green"></lucide-icon>
+            Saisie de la Caisse Physique
+          </h2>
+        </div>
+        
+        @if (isAlreadyClosed()) {
+          <!-- MESSAGE SI DÉJÀ CLÔTURÉ -->
+          <div class="p-12 flex flex-col items-center text-center">
+            <div class="h-16 w-16 bg-fc-green-light text-fc-green rounded-full flex items-center justify-center mb-4">
+              <lucide-icon name="lock" class="h-8 w-8"></lucide-icon>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900 mb-1">Journée Clôturée</h3>
+            <p class="text-sm text-gray-500">La caisse de cette journée a déjà été validée et fermée.</p>
+          </div>
+        } @else {
+            <form [formGroup]="clotureForm" (ngSubmit)="openConfirm()" class="p-6 flex flex-col gap-5">
+              
+              <!-- Argent en caisse -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Argent total en caisse (FCFA) *</label>
+                <input type="number" formControlName="argentCaisse" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-lg font-bold text-gray-900">
+                @if (clotureForm.get('argentCaisse')?.touched && clotureForm.get('argentCaisse')?.invalid) {
+                  <p class="text-xs text-fc-red mt-1">Ce champ est requis.</p>
+                }
+              </div>
+
+              <!-- Fond de caisse -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Fond de caisse initial (FCFA) *</label>
+                <input type="number" formControlName="fondDeCaisse" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+              </div>
+
+              <div class="h-px bg-gray-200 my-2"></div>
+              <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Dépenses de la journée</h3>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Transport</label>
+                  <input type="number" formControlName="transport" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Ration</label>
+                  <input type="number" formControlName="ration" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Autres frais</label>
+                <input type="number" formControlName="autresFrais" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+              </div>
+
+              @if (formValues()?.autresFrais > 0) {
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Description des autres frais</label>
+                  <input type="text" formControlName="descriptionAutres" placeholder="Ex: Achat de sacs plastiques..." class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+                </div>
+              }
+              @if (prep.facturesNonCloturees > 0) {
+            <div class="p-4 bg-fc-red-light border border-fc-red rounded-lg mb-4">
+              <p class="text-sm text-fc-red font-bold flex items-center gap-2">
+                <lucide-icon name="triangle-alert" class="h-4 w-4"></lucide-icon>
+                Attention : {{ prep.facturesNonCloturees }} facture(s) non clôturée(s) !
+              </p>
+              <p class="text-xs text-fc-red mt-1 mb-3">Vous devez fermer toutes les factures d'achat avant de clôturer la caisse.</p>
+              <a routerLink="/factures" class="text-xs font-bold text-white bg-fc-red px-3 py-2 rounded hover:bg-fc-red-dark transition-colors">
+                Aller aux factures →
+              </a>
+            </div>
+          }
+
+
+              <button type="submit" [disabled]="clotureForm.invalid || store.isLoading() || prep.facturesNonCloturees > 0" 
+                      class="mt-4 w-full bg-fc-green hover:bg-fc-green-dark text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
+                <lucide-icon name="lock" class="h-5 w-5"></lucide-icon>
+                Clôturer la journée
+              </button>
+            </form>
+         }
+      </div>
+
+    </div>
+
+    <!-- HISTORIQUE TABLE -->
+    <div class="mt-8 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <h2 class="font-bold text-gray-900">Historique des Clôtures</h2>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Clôturé par</th>
+              <th class="text-right">Vente Réalisée</th>
+              <th class="text-right">Écart</th>
+              <th class="text-right">Bénéfice Net</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (hist of store.historique(); track hist.id) {
+              <tr>
+                <td class="font-medium text-gray-900">{{ hist.date | date:'dd/MM/yyyy' }}</td>
+                <td class="text-gray-600">{{ hist.clotureParNom }}</td>
+                <td class=" font-medium text-gray-900">{{ hist.venteRealisee | currencyFcfa }}</td>
+                <td class=" font-bold" [class.text-fc-red]="hist.ecartVente < 0" [class.text-fc-green]="hist.ecartVente >= 0">
+                  {{ hist.ecartVente | currencyFcfa }}
+                </td>
+                <td class=" font-bold text-fc-green">{{ hist.beneficeNet | currencyFcfa }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="py-8 text-center text-gray-500">Aucun historique disponible.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  }
+
+</div>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen()"
+  title="Confirmer la clôture"
+  message="Êtes-vous sûr de vouloir clôturer cette journée ? Cette action est irréversible et générera le rapport journalier."
+  confirmText="Oui, clôturer"
+  (cancelled)="isConfirmOpen.set(false)"
+  (confirmed)="submitCloture()">
+</app-confirm-dialog>

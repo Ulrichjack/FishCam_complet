@@ -1,0 +1,335 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Back Button -->
+  <div>
+    <a routerLink="/clients" class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-fc-green transition-colors">
+      <lucide-icon name="arrow-left" class="h-4 w-4"></lucide-icon>
+      Retour à la liste
+    </a>
+  </div>
+
+  @if (clientStore.isLoading()) {
+    <div class="flex justify-center py-12">
+      <lucide-icon name="loader-circle" class="h-8 w-8 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else if (clientStore.selectedClient(); as client) {
+
+    <!-- Client Header Card -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+        <!-- Info -->
+        <div class="flex items-center gap-4">
+          <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-fc-green-light text-fc-green font-bold text-xl">
+            {{ client.firstName.charAt(0) }}{{ client.lastName.charAt(0) }}
+          </div>
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900">{{ client.firstName }} {{ client.lastName }}</h1>
+            <div class="flex items-center gap-3 mt-1 text-sm text-gray-500">
+              <span class="flex items-center gap-1"><lucide-icon name="phone" class="h-3.5 w-3.5"></lucide-icon> {{ client.phone }}</span>
+              <span>·</span>
+              <span class="flex items-center gap-1"><lucide-icon name="map-pin" class="h-3.5 w-3.5"></lucide-icon> {{ client.quartier }} {{ client.address ? '- ' + client.address : '' }}</span>
+              <span>·</span>
+              <span class="flex items-center gap-1"><lucide-icon name="calendar" class="h-3.5 w-3.5"></lucide-icon> Né(e) le : {{ client.dateOfBirth | date:'dd/MM/yyyy' }}</span>
+              <span>·</span>
+              <span class="flex items-center gap-1"><lucide-icon name="credit-card"class="h-3.5 w-3.5"></lucide-icon>CNI: {{ client.cni }} </span>
+               <span>.</span>
+              <span class="flex items-center gap-1"><lucide-icon name="calendar" class="h-3.5 w-3.5"></lucide-icon> Inscrit le {{ client.createdAt | date:'dd/MM/yyyy' }}</span>
+              
+
+            </div>
+          </div>
+          
+        </div>
+
+        <!-- Status Badges -->
+        <div class="flex items-center gap-2">
+          @if (client.active) {
+            <span class="px-3 py-1 bg-fc-green-light text-fc-green text-xs font-semibold rounded-full border border-fc-green">Actif</span>
+          } @else {
+            <span class="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-semibold rounded-full border border-gray-300">Inactif</span>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="flex border-b border-gray-200">
+      <button (click)="setTab('courant')"
+              class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+              [class.border-fc-green]="activeTab() === 'courant'"
+              [class.text-fc-green]="activeTab() === 'courant'"
+              [class.border-transparent]="activeTab() !== 'courant'"
+              [class.text-gray-500]="activeTab() !== 'courant'"
+              [class.hover:text-gray-700]="activeTab() !== 'courant'">
+        Compte Courant
+      </button>
+      @if (!authStore.isEnregistreur()){
+      <button (click)="setTab('epargne')"
+                    class="px-6 py-3 text-sm font-medium border-b-2 transition-colors"
+                    [class.border-fc-green]="activeTab() === 'epargne'"
+                    [class.text-fc-green]="activeTab() === 'epargne'"
+                    [class.border-transparent]="activeTab() !== 'epargne'"
+                    [class.text-gray-500]="activeTab() !== 'epargne'"
+                    [class.hover:text-gray-700]="activeTab() !== 'epargne'">
+              Épargne
+            </button>
+      }
+
+    </div>
+
+    <!-- Tab Content Area -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 min-h-75">
+
+      <!-- TAB 1: COMPTE COURANT -->
+      @if (activeTab() === 'courant') {
+
+        @if (client.soldeCompteCourant !== null) {
+          <!-- Le client A un compte courant -->
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Compte Courant</h2>
+                  <p class="text-sm text-gray-500">
+                    Limite de crédit:
+                    @if (client.soldeCompteCourant !== null && client.limiteCredit !== null && client.soldeCompteCourant <= -client.limiteCredit) {
+                      <span class="text-fc-red font-semibold">Atteinte</span>
+                    } @else {
+                      <span class="text-fc-green font-semibold">Disponible</span>
+                    }
+                  </p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-700">Solde actuel</p>
+              <p class="text-2xl font-bold" [class.text-fc-red]="client.soldeCompteCourant < 0" [class.text-fc-green]="client.soldeCompteCourant >= 0">
+                {{ client.soldeCompteCourant | currencyFcfa }} 
+              </p>
+
+              <p class="text-gray-700 text-sm "> Limite de crédit </p>
+              <p> <span class="text-2xl font-bold  text-gray-900">{{ client.limiteCredit | currencyFcfa }} </span></p>
+            </div>
+          </div>
+
+          <!-- NEW ASCII MOCKUP LAYOUT (DYNAMIC) -->
+          <div class=" text-right">
+            <div class="flex items-center gap-6">
+
+            </div>
+
+          </div>
+
+          <div class="flex gap-3 mb-8">
+            <button 
+              [disabled]="!client.active || (client.soldeCompteCourant || 0) <= -(client.limiteCredit || 0)"
+              (click)="openTransactionModal('emprunt', 'Enregistrer un Emprunt')" 
+              class="px-4 py-2 bg-fc-red hover:bg-fc-red-dark text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Enregistrer un Emprunt
+            </button>
+            @if (!authStore.isEnregistreur()) {
+              <button 
+                [disabled]="!client.active"
+                (click)="openTransactionModal('remboursement', 'Enregistrer un Remboursement')" 
+                class="px-4 py-2 bg-fc-green hover:bg-fc-green-dark text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                Enregistrer un Remboursement
+              </button>
+            }
+            @if (authStore.isPatron() || authStore.isSuperAdmin()) {
+              <!-- Placeholder for Modifier Limite -->
+              <button (click)="openTransactionModal('limite', 'Modifier la limite de crédit')"
+              class="px-4 py-2 bg-gray-200 hover:bg-gray-500 text-gray-700 text-sm font-medium rounded-lg transition-colors border border-gray-300">
+                <lucide-icon name="pencil" class="h-4 w-4 inline mr-1"></lucide-icon> Limite
+              </button>
+            }
+          </div>
+
+          <!-- Remplacer le div placeholder par ceci : -->
+          @if (clientStore.isHistoryLoading()) {
+            <div class="flex justify-center py-8">
+              <lucide-icon name="loader-circle" class="h-6 w-6 animate-spin text-fc-green"></lucide-icon>
+            </div>
+          } @else if (clientStore.compteCourantDetail(); as ccDetail) {
+            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+              <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+                  <tr>
+                    <th class="px-4 py-3 font-medium">Date</th>
+                    <th class="px-4 py-3 font-medium">Opération</th>
+                    <th class="px-4 py-3 font-medium text-right">Montant</th>
+                    <th class="px-4 py-3 font-medium text-right">Solde après</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  @for (tx of ccDetail.transactions; track tx.id) {
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-3 text-gray-900">{{ tx.transactionDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                              [class.bg-fc-red-light]="tx.type === 'EMPRUNT'" [class.text-fc-red]="tx.type === 'EMPRUNT'"
+                              [class.bg-fc-green-light]="tx.type === 'REMBOURSEMENT'" [class.text-fc-green]="tx.type === 'REMBOURSEMENT'">
+                          {{ tx.type }}
+                        </span>
+                        <div class="mt-1 text-xs text-gray-500">
+                          @if (tx.description) { <p>{{ tx.description }}</p> }
+                          @if (tx.notes) { <p class="italic text-gray-400">Note: {{ tx.notes }}</p> }
+                        </div>
+                      </td>
+                      <td class="px-4 py-3 text-right font-bold"
+                          [class.text-fc-red]="tx.type === 'EMPRUNT'" [class.text-fc-green]="tx.type === 'REMBOURSEMENT'">
+                        {{ tx.type === 'EMPRUNT' ? '-' : '+' }}{{ tx.montant | currencyFcfa }}
+                      </td>
+                      <td class="px-4 py-3 text-right text-gray-600">{{ tx.soldeApres | currencyFcfa }}</td>
+                    </tr>
+                  } @empty {
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">Aucune transaction</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        } @else {
+          <!-- Le client N'A PAS de compte courant -->
+          <div class="flex flex-col items-center justify-center py-12 text-center">
+            <lucide-icon name="wallet" class="h-12 w-12 text-gray-300 mb-4"></lucide-icon>
+            <h3 class="text-lg font-bold text-gray-900">Aucun Compte Courant</h3>
+            <p class="text-sm text-gray-500 max-w-sm mt-1 mb-6">Ce client n'a pas encore de compte courant. Ouvrez-en un pour lui permettre de faire des emprunts.</p>
+            <button  (click)="clientStore.openCompteCourant()"
+              class="px-4 py-2 bg-fc-green hover:bg-fc-green-dark text-white text-sm font-medium rounded-lg transition-colors">
+              Ouvrir un compte courant
+            </button>
+          </div>
+        }
+      }
+
+      <!-- TAB 2: EPARGNE -->
+      @if (activeTab() === 'epargne') {
+
+        @if (client.soldeEpargne !== null ) {
+          <!-- Le client A une épargne -->
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h2 class="text-lg font-bold text-gray-900">Compte Épargne</h2>
+              <p class="text-sm text-gray-500">Fonds disponibles pour le client</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-500">Solde actuel</p>
+              <p class="text-2xl font-bold text-fc-green">
+                {{ client.soldeEpargne | currencyFcfa }} 
+              </p>
+            </div>
+          </div>
+
+          <div class="flex gap-3 mb-8">
+            <button 
+              [disabled]="!client.active"
+              (click)="openTransactionModal('depot', 'Faire un Dépôt')" 
+              class="px-4 py-2 bg-fc-green hover:bg-fc-green-dark text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Faire un Dépôt
+            </button>
+            
+            <button 
+              [disabled]="!client.active"
+              (click)="openTransactionModal('retrait', 'Faire un Retrait')" 
+              class="px-4 py-2 bg-fc-yellow-dark hover:bg-fc-yellow text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              Faire un Retrait
+            </button>
+            @if (!authStore.isEnregistreur()) {
+              <button (click)="downloadEpargnePdf()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors flex items-center gap-2 ml-auto border border-gray-300">
+                <lucide-icon name="file-text" class="h-4 w-4"></lucide-icon>
+                Fiche PDF
+              </button>
+            }
+          </div>
+
+          @if (clientStore.isHistoryLoading()) {
+          <div class="flex justify-center py-8">
+            <lucide-icon name="loader-circle" class="h-6 w-6 animate-spin text-fc-green"></lucide-icon>
+          </div>
+        } @else if (clientStore.epargneDetail(); as epargneDetail) {
+          <div class="overflow-x-auto border border-gray-200 rounded-lg">
+            <table class="w-full text-sm text-left">
+              <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+                <tr>
+                  <th class="px-4 py-3 font-medium">Date</th>
+                  <th class="px-4 py-3 font-medium">Opération</th>
+                  <th class="px-4 py-3 font-medium text-right">Montant</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                @for (tx of epargneDetail.transactions; track tx.id) {
+                  <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-3 text-gray-900">{{ tx.transactionDate | date:'dd/MM/yyyy HH:mm' }}</td>
+                    <td class="px-4 py-3">
+                      <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
+                            [class.bg-fc-red-light]="tx.type === 'RETRAIT'" [class.text-fc-red]="tx.type === 'RETRAIT'"
+                            [class.bg-fc-green-light]="tx.type === 'DEPOT'" [class.text-fc-green]="tx.type === 'DEPOT'">
+                        {{ tx.type }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-right font-bold"
+                        [class.text-fc-red]="tx.type === 'RETRAIT'" [class.text-fc-green]="tx.type === 'DEPOT'">
+                      {{ tx.type === 'RETRAIT' ? '-' : '+' }}{{ tx.amount | currencyFcfa }}
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="3" class="px-4 py-8 text-center text-gray-500">Aucune transaction</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        } @else {
+          <!-- Le client N'A PAS d'épargne -->
+          <div class="flex flex-col items-center justify-center py-12 text-center">
+            <lucide-icon name="piggy-bank" class="h-12 w-12 text-gray-300 mb-4"></lucide-icon>
+            <h3 class="text-lg font-bold text-gray-900">Aucun Compte Épargne</h3>
+            <p class="text-sm text-gray-500 max-w-sm mt-1 mb-6">Ce client n'a pas encore de compte épargne. Ouvrez-en un pour lui permettre de sécuriser ses fonds.</p>
+            <button (click)="clientStore.openEpargne()"
+             class="px-4 py-2 bg-fc-green hover:bg-fc-green-dark text-white text-sm font-medium rounded-lg transition-colors">
+              Ouvrir un compte épargne
+            </button>
+          </div>
+        }
+      }
+
+    </div>
+
+
+   <app-modal
+      [isOpen]="isModalOpen()"
+      [title]="modalTitle()"
+      (closed)="isModalOpen.set(false)">
+
+      @if (modalError()) {
+        <div class="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
+          {{ modalError() }}
+        </div>
+      }
+
+      @if (currentAction()) {
+      <app-transaction-form
+          [mode]="currentAction()!"
+          [clientName]="client.firstName + ' ' + client.lastName"
+
+          [currentBalance]="
+            currentAction() === 'limite' ? (client.limiteCredit || 0) : 
+            (activeTab() === 'courant' ? (client.soldeCompteCourant || 0) : (client.soldeEpargne || 0))
+          "
+
+          [maxAmount]="
+            currentAction() === 'remboursement' ? ((client.soldeCompteCourant || 0) * -1) : 
+            (currentAction() === 'retrait' ? (client.soldeEpargne || 0) : null)
+          "
+          
+          (cancel)="isModalOpen.set(false)"
+          (save)="onSaveTransaction($event)">
+      </app-transaction-form>
+      }
+    </app-modal>
+
+  }
+
+
+</div>
+
+
+

@@ -1,0 +1,41 @@
+@if (isOpen()) {
+  <div class="relative z-50" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    
+    <!-- Background overlay (Darkens the screen) -->
+    <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" 
+         (click)="closed.emit()"></div>
+
+    <div class="fixed inset-0 overflow-hidden">
+      <div class="absolute inset-0 overflow-hidden">
+        
+        <!-- The Sliding Panel -->
+        <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
+          
+          <!-- Panel Content -->
+          <div class="pointer-events-auto w-screen max-w-md transform transition-all duration-300 ease-in-out shadow-2xl bg-white flex flex-col h-full">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+              <h2 class="text-lg font-semibold text-gray-900" id="slide-over-title">
+                {{ title() }}
+              </h2>
+              <button type="button" 
+                      (click)="closed.emit()"
+                      class="rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 p-2 focus:outline-none transition-colors">
+                <span class="sr-only">Fermer le panneau</span>
+                <lucide-icon name="x" class="h-5 w-5"></lucide-icon>
+              </button>
+            </div>
+
+            <!-- Body (This is where the form will go!) -->
+            <div class="relative flex-1 px-6 py-6 overflow-y-auto">
+              <!-- ng-content allows us to inject any HTML inside this component from the outside! -->
+              <ng-content></ng-content>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,32 @@
+<div class="relative w-full">
+  
+  <!-- Input Container -->
+  <div class="relative">
+    <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-icon>
+    
+    <input type="text"
+           placeholder="Chercher un produit (ex: Carpe)..."
+           class="w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm"
+           [value]="searchQuery()"
+           (input)="onSearch($event)"
+           (blur)="closeDropdown()" >
+
+    <!-- Loading Spinner -->
+    @if (isSearching()) {
+      <lucide-icon name="loader-circle" class="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-fc-green animate-spin"></lucide-icon>
+    }
+  </div>
+
+  <!-- Dropdown Results -->
+  @if (isOpen() && results().length > 0) {
+    <ul class="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+       @for (produit of results(); track produit.id) {
+        <li class="px-4 py-2 hover:bg-gray-50 cursor-pointer flex justify-between items-center border-b border-gray-100 last:border-0"
+           (click)="selectProduct(produit)">
+          <span class="font-medium text-gray-900">{{ produit.nom }}</span>
+          <span class="text-xs text-gray-500">{{ produit.unite }}</span>
+        </li>
+      }
+    </ul>
+  }
+</div>

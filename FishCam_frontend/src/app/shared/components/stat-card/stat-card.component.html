@@ -1,0 +1,16 @@
+<div class="w-full flex flex-col items-center justify-center text-center rounded-[10px] border border-gray-300 px-6 py-7 bg-white ">
+
+  <!-- Icon with dynamic color -->
+  <div class="flex h-11 w-11 items-center justify-center rounded-full" [ngClass]="colorClasses()">
+    <lucide-icon [name]="icon()" class="h-9 w-9"></lucide-icon>
+  </div>
+
+  <!-- Textes -->
+  <div class="space-y-2 mt-4">
+    <p class="text-gray-500 m-0">{{ label() }}</p>
+    <p class="font-lexend text-lg font-semibold text-gray-900 2xl:text-[20px] 3xl:text-[22px] m-0">
+      {{ value() }}
+    </p>
+  </div>
+
+</div>

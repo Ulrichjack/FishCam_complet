@@ -1,0 +1,40 @@
+@if(store.stats()){
+  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 mb-6">
+
+
+   <app-stat-card
+      label="Total Dettes"
+      [value]="store.stats()!.courantResponse.totalDettes + ' FCFA'"
+      icon="trending-down"
+      colorVariant="red"
+    ></app-stat-card>
+
+    <app-stat-card
+      label="Comptes en Dette"
+      [value]="store.stats()!.courantResponse.nombreComptesEnDette + ' clients'"
+      icon="triangle-alert"
+      colorVariant="red"
+    ></app-stat-card>
+
+    <app-stat-card
+      label="Total Épargne"
+      [value]="store.stats()!.epargnes.totalEpargne + ' FCFA'"
+      icon="circle-dollar-sign"
+      colorVariant="green"
+    ></app-stat-card>
+
+    <app-stat-card
+      label="Moyenne Épargne"
+      [value]="store.stats()!.epargnes.moyenneParCompte + ' FCFA'"
+      icon="wallet"
+      colorVariant="yellow"
+    ></app-stat-card>
+
+    <app-stat-card
+      label="Total Clients"
+      [value]="store.stats()!.nombreClients + ' clients'"
+      icon="users"
+      colorVariant="green"
+    ></app-stat-card>
+  </div>
+}

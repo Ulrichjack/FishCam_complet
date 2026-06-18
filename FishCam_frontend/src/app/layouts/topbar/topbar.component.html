@@ -1,0 +1,117 @@
+<header class="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-gray-200 bg-white/80 px-5 backdrop-blur-xl">
+
+  <!-- Left Side -->
+  <div class="flex items-center gap-3">
+    <button (click)="mobileMenuClicked.emit()"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 lg:hidden">
+      <lucide-icon name="menu" class="h-5 w-5"></lucide-icon>
+    </button>
+    <h1 class="text-lg font-semibold text-gray-900">{{ pageTitle() }}</h1>
+  </div>
+
+  <!-- Right Side -->
+  <div class="flex items-center gap-4">
+    
+    <!-- 1. Sélecteur de boutique (Visible uniquement si MULTI_POISSONNERIE) -->
+    @if (authStore.isMultiPoissonnerie()) {
+      <div class="hidden md:flex items-center bg-gray-50 border border-gray-200 rounded-lg px-3 py-1.5">
+        <lucide-icon name="store" class="h-4 w-4 text-gray-500 mr-2"></lucide-icon>
+        <select 
+          class="bg-transparent text-sm font-medium text-gray-700 outline-none cursor-pointer"
+          [ngModel]="authStore.activePoissonnerieId()"
+          (ngModelChange)="onShopChange($event)">
+          <!-- Boucle sur les vraies boutiques -->
+          @for (p of poissonneries(); track p.id) {
+            <option [ngValue]="p.id">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="hidden md:block h-6 w-px bg-gray-200 mx-2"></div>
+    }
+
+    <!-- 2. Notifications -->
+    <div class="relative">
+      <button (click)="toggleNotifDropdown($event)"
+              class="relative flex h-9 w-9 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100">
+        <lucide-icon name="bell" class="h-5 w-5"></lucide-icon>
+
+        @if (unreadCount() > 0) {
+          <span class="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[10px] font-bold text-white">
+            {{ unreadCount() }}
+          </span>
+        }
+      </button>
+
+      @if (isNotifOpen()) {
+        <div (click)="$event.stopPropagation()"
+             class="absolute mt-2 rounded-xl border border-gray-200 bg-white shadow-lg overflow-hidden
+           left-2 right-2 w-auto max-w-md
+           sm:left-auto sm:right-0 sm:w-96">
+
+          <!-- Header -->
+          <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+            <span class="text-sm font-semibold text-gray-900">Notifications</span>
+            <a routerLink="/notifications"
+               (click)="closeNotifDropdown()"
+               class="text-xs font-medium text-fc-green hover:underline">
+              Voir tout
+            </a>
+          </div>
+
+          <!-- List -->
+          <div class="max-h-96 overflow-auto">
+            @if (recentNotifications().length === 0) {
+              <div class="px-4 py-6 text-center text-sm text-gray-500">
+                Aucune notification
+              </div>
+            } @else {
+              @for (n of recentNotifications(); track n.id) {
+                <button type="button"
+                        (click)="onNotificationClick(n.id!, n.read!)"
+                        class="w-full text-left px-4 py-3 hover:bg-gray-50 border-b border-gray-50">
+                  <div class="flex items-start gap-3">
+                    <div class="mt-1 h-2 w-2 rounded-full"
+                         [class.bg-fc-green]="!n.read"
+                         [class.bg-transparent]="n.read"></div>
+
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm text-gray-900 whitespace-pre-line line-clamp-3">
+                        {{ formatMessage(n.message!) }}
+                      </p>
+                      <p class="text-xs text-gray-500 mt-1">
+                        {{ n.createdAt | date:'dd/MM/yyyy HH:mm' }}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              }
+            }
+          </div>
+
+          <!-- Footer -->
+          <div class="px-4 py-3 bg-gray-50">
+            <a routerLink="/notifications"
+               (click)="closeNotifDropdown()"
+               class="inline-flex w-full justify-center rounded-lg bg-fc-green px-3 py-2 text-sm font-semibold text-white hover:bg-fc-green-dark">
+              Voir toutes les notifications
+            </a>
+          </div>
+
+        </div>
+      }
+    </div>
+
+    <div class="h-6 w-px bg-gray-200"></div>
+
+    <!-- 3. Profil Utilisateur -->
+    <div class="flex items-center gap-2.5">
+      <div class="flex h-9 w-9 items-center justify-center rounded-full bg-fc-green text-sm font-bold text-white">
+        {{ initials() }}
+      </div>
+      <div class="hidden sm:flex flex-col leading-tight">
+        <span class="text-sm font-semibold text-gray-900">{{ authStore.user()?.firstName }} {{ authStore.user()?.lastName }}</span>
+        <span class="text-xs text-gray-500">{{ authStore.user()?.role }}</span>
+      </div>
+    </div>
+  </div>
+</header>

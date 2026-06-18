@@ -1,0 +1,324 @@
+<div class="flex flex-col gap-6">
+
+  <!-- 1. BOUTON RETOUR -->
+  <div>
+    <a routerLink="/factures"
+       class="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-fc-green transition-colors">
+      <lucide-icon name="arrow-left" class="h-4 w-4"></lucide-icon>
+      Retour aux factures
+    </a>
+  </div>
+
+  @if (isLoading()) {
+    <div class="flex justify-center py-12">
+      <lucide-icon name="loader-circle" class="h-8 w-8 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else if (facture(); as fact) {
+
+    <!-- 2. HEADER CARD -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+      <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
+
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <h1 class="text-2xl font-bold text-gray-900">Facture #{{ fact.id }}</h1>
+            @if (!fact.cloture) {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> OUVERTE
+              </span>
+            } @else {
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                <lucide-icon name="lock" class="h-3 w-3"></lucide-icon> CLÔTURÉE
+              </span>
+            }
+          </div>
+
+          <!-- DETAIL ROW: date · fournisseur · livreur · par -->
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500">
+            <span class="flex items-center gap-1">
+              <lucide-icon name="calendar" class="h-3.5 w-3.5"></lucide-icon>
+              {{ fact.dateAchat | date:'dd/MM/yyyy' }}
+            </span>
+            <span>·</span>
+            <span class="flex items-center gap-1">
+              <lucide-icon name="store" class="h-3.5 w-3.5"></lucide-icon>
+              <span class="font-medium text-gray-900">{{ fact.fournisseurNom }}</span>
+            </span>
+            <span>·</span>
+            <span class="flex items-center gap-1">
+              <lucide-icon name="users" class="h-3.5 w-3.5"></lucide-icon>
+              {{ fact.enregistreParNom }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0">
+
+
+          @if (!hasEvaluation() ) {
+              <button (click)="openEvaluationModal()"
+                      class="flex items-center gap-2 px-4 py-2 bg-fc-yellow-light hover:bg-fc-yellow text-fc-yellow-dark hover:text-white text-sm font-medium rounded-lg transition-colors">
+                <lucide-icon name="star" class="h-4 w-4"></lucide-icon>
+                Évaluer la livraison
+              </button>
+            }
+
+          <button (click)="downloadPdf()"
+                  class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+            <lucide-icon name="file-text" class="h-4 w-4"></lucide-icon>
+            PDF
+          </button>
+          @if (!fact.cloture && (authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere())) {
+            <button (click)="openCloseDialog()"
+                    class="flex items-center gap-2 px-4 py-2 bg-fc-green hover:bg-fc-green-dark text-white text-sm font-medium rounded-lg transition-colors">
+              <lucide-icon name="lock" class="h-4 w-4"></lucide-icon>
+              Clôturer
+            </button>
+          }
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 3. KPI CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Total Achats</p>
+        <p class="text-2xl font-bold text-gray-900">{{ fact.totalAchat | currencyFcfa }} </p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Vente Prévisible</p>
+        <p class="text-2xl font-bold text-gray-900">{{ fact.totalVente | currencyFcfa }} </p>
+      </div>
+
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Bénéfice Prévu</p>
+        @if (fact.margeTotal > 0) {
+          <p class="text-2xl font-bold text-fc-green">+{{ fact.margeTotal | currencyFcfa }}</p>
+        } @else if (fact.margeTotal < 0) {
+          <p class="text-2xl font-bold text-fc-red">{{ fact.margeTotal | currencyFcfa }}</p>
+        } @else {
+          <p class="text-2xl font-bold text-gray-400">0 </p>
+        }
+      </div>
+    </div>
+
+    <!-- 4. ONE CARD : TABLE + FORM + TOTAL -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+      <!-- 4a. TABLE DES LIGNES -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+          <thead class="bg-gray-50 text-gray-500 border-b border-gray-200">
+            <tr>
+              <th class="px-6 py-4 font-medium">Produit</th>
+              <th class="px-6 py-4 font-medium text-center">Qté</th>
+              <th class="px-6 py-4 font-medium text-right">Prix/Carton</th>
+              <th class="px-6 py-4 font-medium text-right">Montant</th>
+              <th class="px-6 py-4 font-medium text-right">Poids (kg)</th>
+              <th class="px-6 py-4 font-medium text-right">kg/Vte</th>
+              <th class="px-6 py-4 font-medium text-right">Vente Total</th>
+              @if (!fact.cloture) {
+                <th class="px-6 py-4 font-medium text-center w-16"></th>
+              }
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            @for (ligne of fact.ligneAchatResponses; track ligne.id) {
+              <tr class="hover:bg-gray-50 transition-colors">
+                <td class="px-6 py-4 font-medium text-gray-900">{{ ligne.produitNom }}</td>
+                <td class="px-6 py-4 text-center text-gray-700">{{ ligne.quantiteCartons }}</td>
+                <td class="px-6 py-4 text-right text-gray-700">{{ ligne.prixUnitaireCarton | currencyFcfa }}</td>
+                <td class="px-6 py-4 text-right font-semibold text-gray-900">{{ ligne.montantCarton | currencyFcfa }}</td>
+                <td class="px-6 py-4 text-right text-gray-700">{{ ligne.poidsKg | currencyFcfa }}</td>
+                <td class="px-6 py-4 text-right text-gray-700">{{ ligne.prixVenteKilo | currencyFcfa }}</td>
+                <td class="px-6 py-4 text-right font-semibold text-fc-green">{{ ligne.prixVenteTotal | currencyFcfa }}</td>
+                @if (!fact.cloture) {
+                  <td class="px-6 py-4 text-center">
+                    <button (click)="deleteLigne(ligne.id)"
+                            class="text-gray-400 hover:text-fc-red hover:bg-red-50 p-1.5 rounded-md transition-colors">
+                      <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
+                    </button>
+                  </td>
+                }
+              </tr>
+            } @empty {
+              <tr>
+                <td [attr.colspan]="fact.cloture ? 7 : 8"
+                    class="px-6 py-10 text-center text-gray-400">
+                  <lucide-icon name="package" class="h-8 w-8 mx-auto mb-2 opacity-40"></lucide-icon>
+                  <p>Aucune ligne ajoutée</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 4b. AJOUTER UNE LIGNE (Avec bouton Toggle) -->
+      @if (!fact.cloture) {
+        @if (!showAddForm()) {
+          <div class="border-t border-gray-200 bg-gray-50 px-6 py-3 text-center">
+            <button (click)="showAddForm.set(true)" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 mx-auto text-sm font-semibold text-white bg-fc-green hover:bg-fc-green-dark active:scale-[0.98] rounded-xl shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-fc-green/50">
+              <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+              Ajouter un produit à la facture
+            </button>
+          </div>
+        } @else {
+          <div class="border-t-2 border-dashed border-gray-200 bg-gray-50/60 px-6 py-5 relative">
+            <div class="flex justify-between items-center mb-3">
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                Nouveau produit
+              </p>
+              <button (click)="showAddForm.set(false)" class="text-gray-400 hover:text-fc-red transition-colors">
+                <lucide-icon name="x" class="h-5 w-5"></lucide-icon>
+              </button>
+            </div>
+            <app-ligne-form
+              [poissonnerieId]="fact.poissonnerieId"
+              (ligneAdded)="onLigneAdded($event)">
+            </app-ligne-form>
+          </div>
+        }
+      }
+
+      <!-- 4c. TOTAL ROW -->
+      <div class="border-t border-gray-200 bg-gray-50 px-6 py-4">
+        <div class="flex flex-wrap justify-between items-center gap-4 text-sm">
+          <span class="text-gray-500">
+            {{ fact.ligneAchatResponses.length }} ligne(s) ·
+            {{ getTotalPoids(fact.ligneAchatResponses) }} kg total
+          </span>
+          <div class="flex items-center gap-6">
+            <span class="text-gray-600">
+              Total achat :
+              <span class="font-bold text-gray-900 ml-1">{{ fact.totalAchat | currencyFcfa }} </span>
+            </span>
+            <span class="text-gray-600">
+              Vente prév. :
+              <span class="font-bold text-fc-green ml-1">{{ fact.totalVente | currencyFcfa }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3.5 ÉVALUATION DU LIVREUR (Si elle existe) -->
+      @if (evaluation(); as eval) {
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <div>
+            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
+              <lucide-icon name="truck" class="h-4 w-4 text-gray-500"></lucide-icon>
+              Livré par : {{ eval.livreurPrenom }} {{ eval.livreurNom }}
+            </h3>
+            <p class="text-xs text-gray-500 mt-1">Évalué par {{ eval.evaluatorNom }} le {{ eval.dateEvaluation | date:'dd/MM/yyyy' }}</p>
+            @if (eval.commentaire) {
+              <p class="text-sm text-gray-700 mt-2 italic">"{{ eval.commentaire }}"</p>
+            }
+          </div>
+          <div class="flex flex-col gap-2 min-w-50">
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-600">Qualité :</span>
+              <div class="flex text-fc-yellow">
+                <!-- On simule les étoiles pleines -->
+                @for (i of [1,2,3,4,5]; track i) {
+                  <lucide-icon name="star" class="h-4 w-4" [class.fill-fc-yellow]="i <= eval.qualiteProduit" [class.text-gray-300]="i > eval.qualiteProduit"></lucide-icon>
+                }
+              </div>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-gray-600">Poids :</span>
+              <div class="flex text-fc-yellow">
+                @for (i of [1,2,3,4,5]; track i) {
+                  <lucide-icon name="star" class="h-4 w-4" [class.fill-fc-yellow]="i <= eval.respectPoids" [class.text-gray-300]="i > eval.respectPoids"></lucide-icon>
+                }
+              </div>
+            </div>
+            @if (eval.problemeSignale) {
+              <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded mt-1">
+                <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> Problème signalé
+              </span>
+            }
+          </div>
+        </div>
+      }
+
+
+    </div>
+
+  }
+</div>
+
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen()"
+  title="Clôturer la facture"
+  message="Êtes-vous sûr de vouloir clôturer cette facture ? Cette action est irréversible."
+  confirmText="Clôturer"
+  (cancelled)="isConfirmOpen.set(false)"
+  (confirmed)="executeClose()">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  [isOpen]="isDeleteConfirmOpen()"
+  title="Supprimer le produit"
+  message="Voulez-vous vraiment supprimer ce produit de la facture ?"
+  confirmText="Supprimer"
+  (cancelled)="isDeleteConfirmOpen.set(false)"
+  (confirmed)="executeDeleteLigne()">
+</app-confirm-dialog>
+
+<!-- Modale d'évaluation -->
+<app-modal
+  [isOpen]="isEvalModalOpen()"
+  title="Évaluer la livraison"
+  (closed)="isEvalModalOpen.set(false)">
+  
+  <form [formGroup]="evalForm" (ngSubmit)="submitEvaluation()" class="p-6 flex flex-col gap-5">
+    
+    <!-- Livreur -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Livreur *</label>
+      <select formControlName="livreurId" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none bg-white">
+        <option [ngValue]="null">Sélectionner le livreur...</option>
+        @for (l of livreurs(); track l.id) {
+          <option [ngValue]="l.id">{{ l.prenom }} {{ l.nom }} ({{ l.fournisseurNom }})</option>
+        }
+      </select>
+    </div>
+
+    <!-- Qualité -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Qualité du poisson (1 à 5) *</label>
+      <app-star-rating formControlName="qualiteProduit"></app-star-rating>
+    </div>
+
+    <!-- Poids -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Respect du poids (1 à 5) *</label>
+      <app-star-rating formControlName="respectPoids"></app-star-rating>
+    </div>
+
+    <!-- Problème signalé -->
+    <div class="flex items-center gap-2 mt-2">
+      <input type="checkbox" id="probleme" formControlName="problemeSignale" class="h-4 w-4 text-fc-red focus:ring-fc-red border-gray-300 rounded">
+      <label for="probleme" class="text-sm font-medium text-gray-700">Signaler un problème grave (Vol, avarié...)</label>
+    </div>
+
+    <!-- Commentaire -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Commentaire (Optionnel)</label>
+      <textarea formControlName="commentaire" rows="3" placeholder="Détails sur la livraison..."
+                class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none"></textarea>
+    </div>
+
+    <button type="submit" [disabled]="evalForm.invalid || isLoading()" 
+            class="mt-2 w-full bg-fc-green hover:bg-fc-green-dark text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 flex justify-center items-center gap-2">
+      @if (isLoading()) {
+        <lucide-icon name="loader-circle" class="h-5 w-5 animate-spin"></lucide-icon>
+      } @else {
+        <lucide-icon name="circle-check" class="h-5 w-5"></lucide-icon>
+      }
+      Soumettre l'évaluation
+    </button>
+  </form>
+</app-modal>

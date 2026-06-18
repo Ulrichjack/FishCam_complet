@@ -1,0 +1,176 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Bilan Mensuel</h1>
+      <p class="text-sm text-gray-500 mt-1">Consultez les performances financières de votre poissonnerie.</p>
+    </div>
+    
+    <!-- Filtres Mois / Année -->
+    <div class="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
+      <lucide-icon name="calendar" class="h-5 w-5 text-gray-400 ml-2"></lucide-icon>
+      
+      <select [ngModel]="selectedMois()" (ngModelChange)="selectedMois.set($event); onFilterChange()" 
+              class="border-none focus:ring-0 text-sm font-medium text-gray-700 outline-none cursor-pointer bg-transparent py-1">
+        @for (m of moisList; track m.value) {
+          <option [value]="m.value">{{ m.label }}</option>
+        }
+      </select>
+
+      <span class="text-gray-300">/</span>
+
+      <select [ngModel]="selectedAnnee()" (ngModelChange)="selectedAnnee.set($event); onFilterChange()" 
+              class="border-none focus:ring-0 text-sm font-medium text-gray-700 outline-none cursor-pointer bg-transparent py-1">
+        @for (a of anneesList(); track $index) {
+          <option [value]="a">{{ a }}</option>
+        }
+      </select>
+    </div>
+  </div>
+
+  @if (store.isLoading()) {
+    <div class="flex justify-center py-20 bg-white rounded-xl border border-gray-200">
+      <lucide-icon name="loader-circle" class="h-10 w-10 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else if (store.error()) {
+    <div class="bg-fc-red-light border border-fc-red text-fc-red p-8 rounded-xl flex flex-col items-center text-center">
+      <lucide-icon name="triangle-alert" class="h-12 w-12 mb-3"></lucide-icon>
+      <p class="font-bold text-lg mb-1">Erreur ou Pas de données</p>
+      <p>{{ store.error() }}</p>
+    </div>
+  } @else if (store.bilan(); as bilan) {
+
+    <!-- KPI CARDS - BILAN INDIVIDUEL -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      
+      <!-- Achats -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-medium text-gray-500">Total Achats (Marchandise)</p>
+          <div class="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+            <lucide-icon name="package" class="h-4 w-4"></lucide-icon>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-900">{{ bilan.totalAchatMois | currencyFcfa }}</p>
+      </div>
+
+      <!-- Ventes Réalisées -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-medium text-gray-500">Ventes Réalisées (Caisse)</p>
+          <div class="h-8 w-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+            <lucide-icon name="circle-dollar-sign" class="h-4 w-4"></lucide-icon>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-gray-900">{{ bilan.totalVenteRealisee | currencyFcfa }}</p>
+        <p class="text-xs text-gray-500 mt-1">Prévu: {{ bilan.totalVentePrevisibleMois | currencyFcfa }}</p>
+      </div>
+
+      <!-- Dépenses & Dettes -->
+      <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+        <div class="flex items-center justify-between mb-3">
+          <p class="text-sm font-medium text-gray-500">Dépenses & Pertes</p>
+          <div class="h-8 w-8 rounded-full bg-fc-red-light flex items-center justify-center text-fc-red">
+            <lucide-icon name="trending-down" class="h-4 w-4"></lucide-icon>
+          </div>
+        </div>
+        <p class="text-xl font-bold text-gray-900">{{ bilan.totalDepensesMois | currencyFcfa }}</p>
+        <p class="text-xs text-fc-red mt-1 font-medium">Dettes mois: {{ bilan.montantDettesMois | currencyFcfa }}</p>
+      </div>
+
+      <!-- Bénéfice Net -->
+      <div class="bg-gray-900 rounded-xl border border-gray-800 p-5 shadow-sm relative overflow-hidden">
+        <div class="absolute -right-4 -top-4 opacity-10">
+          <lucide-icon name="chart-bar" class="h-24 w-24"></lucide-icon>
+        </div>
+        <div class="relative z-10">
+          <p class="text-sm font-medium text-gray-400 mb-1">BÉNÉFICE NET DU MOIS</p>
+          <p class="text-3xl font-bold" [ngClass]="bilan.beneficeNetMois >= 0 ? 'text-fc-green' : 'text-fc-red'">
+            {{ bilan.beneficeNetMois >= 0 ? '+' : '' }}{{ bilan.beneficeNetMois | currencyFcfa }}
+          </p>
+          <p class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+            <lucide-icon name="calendar-check" class="h-3 w-3"></lucide-icon>
+            Sur {{ bilan.nombreJoursTravailles }} jours travaillés
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEILLEUR JOUR -->
+    @if (bilan.meilleurJourBenefice) {
+      <div class="bg-fc-green-light border border-fc-green rounded-xl p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 bg-white rounded-full flex items-center justify-center text-fc-green shadow-sm">
+            <lucide-icon name="trending-up" class="h-5 w-5"></lucide-icon>
+          </div>
+          <div>
+            <p class="text-sm font-medium text-fc-green">Le meilleur jour de ce mois a été le <strong>{{ bilan.meilleurJourBenefice | date:'dd MMMM yyyy' }}</strong></p>
+            <p class="text-xs text-fc-green opacity-80">Continuez vos efforts pour reproduire ce succès !</p>
+          </div>
+        </div>
+        <div class="text-right hidden sm:block">
+          <p class="text-xs text-fc-green uppercase tracking-wider font-bold">Bénéfice ce jour-là</p>
+          <p class="text-lg font-bold text-fc-green">{{ bilan.beneficeMeilleurJour | currencyFcfa }}</p>
+        </div>
+      </div>
+    }
+
+    <!-- COMPARAISON SUPER ADMIN (MULTISITES) -->
+    @if ((authStore.isSuperAdmin() || authStore.isPatron()) && store.comparaison(); as comp) {
+      <div class="mt-4 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+          <h2 class="font-bold text-gray-900 flex items-center gap-2">
+            <lucide-icon name="building-2" class="h-5 w-5 text-gray-500"></lucide-icon>
+            Comparaison Globale des Boutiques
+          </h2>
+          <span class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">Vue Direction</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-4 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-4">
+            <thead>
+              <tr>
+                <th>Poissonnerie</th>
+                <th class="text-right">Total Achats</th>
+                <th class="text-right">Ventes (Caisse)</th>
+                <th class="text-right">Dépenses</th>
+                <th class="text-right">Bénéfice Net</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of comp.bilans; track b.poissonnerieId) {
+                <tr>
+                  <td class="font-medium text-gray-900 flex items-center gap-2">
+                    <lucide-icon name="store" class="h-4 w-4 text-gray-400"></lucide-icon>
+                    {{ b.poissonnerieNom }}
+                  </td>
+                  <td class="text-right text-gray-600">{{ b.totalAchatMois | currencyFcfa }}</td>
+                  <td class="text-right font-medium text-gray-900">{{ b.totalVenteRealisee | currencyFcfa }}</td>
+                  <td class="text-right text-gray-600">{{ b.totalDepensesMois | currencyFcfa }}</td>
+                  <td class="text-right font-bold" [ngClass]="b.beneficeNetMois >= 0 ? 'text-fc-green' : 'text-fc-red'">
+                    {{ b.beneficeNetMois | currencyFcfa }}
+                  </td>
+                </tr>
+              }
+            </tbody>
+            <tfoot class="bg-gray-50 font-bold border-t-2 border-gray-300">
+              <tr>
+                <td class="py-4 px-4 text-gray-900">TOTAL GLOBAL</td>
+                <td class="text-right py-4 px-4 text-gray-900">{{ comp.totalAchatsGlobal | currencyFcfa }}</td>
+                <td class="text-right py-4 px-4 text-gray-900">{{ comp.totalVentesGlobal | currencyFcfa }}</td>
+                <td class="text-right py-4 px-4 text-gray-900">{{ comp.totalDepensesGlobal | currencyFcfa }}</td>
+                <td class="text-right py-4 px-4 text-lg" [ngClass]="comp.beneficeNetGlobal >= 0 ? 'text-fc-green' : 'text-fc-red'">
+                  {{ comp.beneficeNetGlobal | currencyFcfa }}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+    }
+
+  }
+
+</div>

@@ -1,0 +1,156 @@
+<!-- src/app/features/bilans/pages/statistiques-page/statistiques-page.component.html -->
+<div class="flex flex-col gap-6">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Tableau de bord - Statistiques</h1>
+      <p class="text-sm text-gray-500 mt-1">Analyse détaillée de vos performances commerciales.</p>
+    </div>
+  </div>
+
+  @if (store.isLoading()) {
+    <div class="flex justify-center py-20 bg-white rounded-xl border border-gray-200">
+      <lucide-icon name="loader-circle" class="h-10 w-10 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else if (store.error()) {
+    <div class="bg-fc-red-light border border-fc-red text-fc-red p-8 rounded-xl flex flex-col items-center text-center">
+      <lucide-icon name="triangle-alert" class="h-12 w-12 mb-3"></lucide-icon>
+      <p class="font-bold text-lg mb-1">Erreur</p>
+      <p>{{ store.error() }}</p>
+    </div>
+  } @else if (store.statsPoissonnerie(); as stats) {
+
+    <!-- ROW 1 : GLOBAL KPI -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500">Clients Actifs</p>
+          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.nombreClients }}</p>
+        </div>
+        <div class="h-10 w-10 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center">
+          <lucide-icon name="users" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500">Épargnes ({{ stats.epargnes.nombreComptes }})</p>
+          <p class="text-2xl font-bold text-fc-green mt-1">{{ stats.epargnes.totalEpargne | currencyFcfa }}</p>
+        </div>
+        <div class="h-10 w-10 bg-fc-green-light text-fc-green rounded-full flex items-center justify-center">
+          <lucide-icon name="piggy-bank" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500">Moy. par Épargne</p>
+          <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.epargnes.moyenneParCompte | currencyFcfa }}</p>
+        </div>
+        <div class="h-10 w-10 bg-gray-100 text-gray-600 rounded-full flex items-center justify-center">
+          <lucide-icon name="chart-bar" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-sm font-medium text-gray-500">Dettes ({{ stats.courantResponse.nombreComptesEnDette }})</p>
+          <p class="text-2xl font-bold text-fc-red mt-1">{{ stats.courantResponse.totalDettes | currencyFcfa }}</p>
+        </div>
+        <div class="h-10 w-10 bg-fc-red-light text-fc-red rounded-full flex items-center justify-center">
+          <lucide-icon name="trending-down" class="h-5 w-5"></lucide-icon>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROW 2 : CHART & DEBITEURS -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- LE GRAPHIQUE (LAZY LOADED AVEC @DEFER) -->
+      <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Revenus Mensuels</h2>
+        
+        <div class="h-72 w-full">
+          <!-- C'EST ICI QU'ON UTILISE @DEFER ! -->
+          @defer (on viewport) {
+            <canvas baseChart 
+                    [data]="chartData()" 
+                    [options]="barChartOptions" 
+                    [type]="barChartType">
+            </canvas>
+          } @placeholder {
+            <!-- Ce qui s'affiche avant que le chart soit chargé -->
+            <div class="h-full w-full flex items-center justify-center bg-gray-50 rounded animate-pulse">
+              <span class="text-gray-400">Chargement du graphique...</span>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- TOP DÉBITEURS -->
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+          <lucide-icon name="triangle-alert" class="h-5 w-5 text-fc-red"></lucide-icon>
+          Top Débiteurs
+        </h2>
+        
+        <div class="flex flex-col gap-4">
+          @for (d of stats.topDebiteurs; track $index) {
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100 last:border-0 last:pb-0">
+              <div>
+                <p class="font-bold text-gray-900">{{ d.nomClient }}</p>
+                <p class="text-xs text-gray-500">{{ d.telephone }}</p>
+              </div>
+              <p class="font-bold text-fc-red">{{ d.montantDette | currencyFcfa }}</p>
+            </div>
+          } @empty {
+            <p class="text-center text-sm text-gray-500 py-4">Aucun client en dette.</p>
+          }
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ROW 3 : TOP PRODUITS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Les plus vendus -->
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Top Produits (Ventes)</h2>
+        <div class="flex flex-col gap-3">
+          @for (p of stats.topProduits; track $index) {
+            <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+              <span class="font-medium text-gray-900">{{ p.nomProduit }}</span>
+              <div class="text-right">
+                <span class="text-sm font-bold block">{{ p.totalCartons }} cartons</span>
+                <span class="text-xs text-gray-500">{{ p.totalDepense | currencyFcfa }} (Achats)</span>
+              </div>
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-500">Pas de données.</p>
+          }
+        </div>
+      </div>
+
+      <!-- Les plus rentables -->
+      <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+        <h2 class="text-lg font-bold text-gray-900 mb-4">Top Produits (Rentabilité)</h2>
+        <div class="flex flex-col gap-3">
+          @for (p of stats.topProduitsRentables; track $index) {
+            <div class="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
+              <span class="font-medium text-gray-900">{{ p.nomProduit }}</span>
+              <span class="text-sm font-bold" [ngClass]="p.margeTotale >= 0 ? 'text-fc-green' : 'text-fc-red'">
+                  {{ p.margeTotale > 0 ? '+' : '' }}{{ p.margeTotale | currencyFcfa }} de marge
+                </span>          
+            </div>
+          } @empty {
+            <p class="text-sm text-gray-500">Pas de données.</p>
+          }
+        </div>
+      </div>
+
+    </div>
+  }
+
+</div>

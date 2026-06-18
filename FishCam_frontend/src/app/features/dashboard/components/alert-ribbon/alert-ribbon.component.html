@@ -1,0 +1,14 @@
+@if(store.debtors().length > 0) {
+  <div class="bg-fc-red-light border border-fc-red border-opacity-30 rounded-xl px-4 py-3 mb-6">
+    <div class="flex items-center gap-2 mb-2">
+      <!-- icon -->
+      <h3 class="text-sm font-semibold text-fc-red">Clients en dépassement de seuil</h3>
+    </div>
+
+    <div class="flex gap-2 overflow-x-auto pb-2">
+      @for(debtor of store.debtors(); track debtor.id) {
+        <app-debtor-pill [debtor]="debtor"></app-debtor-pill>
+      }
+    </div>
+  </div>
+}

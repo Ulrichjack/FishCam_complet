@@ -1,0 +1,107 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Journal d'Audit</h1>
+      <p class="text-sm text-gray-500 mt-1">Historique en lecture seule de toutes les actions effectuées sur le système.</p>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <!-- The Table -->
+    <div class="block custom-scrollbar w-full max-w-full overflow-x-auto">
+      <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+        <thead>
+          <tr>
+            <th>Date / Heure</th>
+            <th>Action</th>
+            <th>Entité</th>
+            <th>Utilisateur</th>
+            <th>Détails</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (store.isLoading() && !store.logsPage()) {
+            <tr>
+              <td colspan="5" class="py-8 text-center text-gray-500">
+                <lucide-icon name="loader-circle" class="h-6 w-6 animate-spin mx-auto mb-2"></lucide-icon>
+                Chargement de l'historique...
+              </td>
+            </tr>
+          } @else if (store.error()) {
+            <tr>
+              <td colspan="5" class="py-8 text-center text-fc-red">
+                <lucide-icon name="triangle-alert" class="h-6 w-6 mx-auto mb-2"></lucide-icon>
+                {{ store.error() }}
+              </td>
+            </tr>
+          } @else {
+            @for (log of store.logsPage()?.content; track log.id) {
+              <tr class="group transition-colors">
+                <td class="whitespace-nowrap">
+                  <p class="font-medium text-gray-900">{{ log.timestamp | date:'dd/MM/yyyy' }}</p>
+                  <p class="text-[13px] text-gray-500">{{ log.timestamp | date:'HH:mm:ss' }}</p>
+                </td>
+                <td>
+                  @switch (log.action) {
+                    @case ('CREATE') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-blue-100 text-blue-800">CRÉATION</span> }
+                    @case ('UPDATE') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-yellow-100 text-yellow-800">MODIFICATION</span> }
+                    @case ('DELETE') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-800">SUPPRESSION</span> }
+                    @case ('REACTIVATE') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-purple-100 text-purple-800">RÉACTIVATION</span> }
+                    @case ('EMPRUNT') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-800 text-white">EMPRUNT</span> }
+                    @case ('REMBOURSEMENT') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-fc-green-light text-fc-green">REMBOURSEMENT</span> }
+                    @case ('DEPOT') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">DÉPÔT</span> }
+                    @case ('RETRAIT') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-orange-100 text-orange-800">RETRAIT</span> }
+                    @case ('ADD Ligne') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-indigo-100 text-indigo-800">AJOUT LIGNE</span> }
+                    @case ('CLOTURE') { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-teal-100 text-teal-800">CLÔTURE</span> }
+                    @default { <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-gray-100 text-gray-800">{{ log.action }}</span> }
+                  }
+                </td>
+                <td class="font-medium text-gray-700">{{ log.entityName }} <span class="text-xs text-gray-400">(#{{ log.entityId }})</span></td>
+                <td class="text-gray-900 font-medium">{{ log.performedBy }}</td>
+                <td class="text-sm text-gray-600 max-w-xs truncate" [title]="log.details">{{ log.details }}</td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="py-12 text-center text-gray-500">
+                  <lucide-icon name="scroll-text" class="h-8 w-8 mx-auto mb-3 text-gray-300"></lucide-icon>
+                  <p class="text-base font-medium text-gray-900">Aucun log trouvé</p>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Controls -->
+   <!-- Pagination Controls -->
+    <div class="flex w-full flex-row justify-between items-center gap-6 p-4 border-t border-gray-200">
+      <div class="flex w-full flex-row justify-end items-center gap-4">
+        <p class="hidden font-normal text-gray-600 sm:block text-sm">
+          Page {{ currentPage() + 1 }} sur {{ totalPages() }}
+        </p>
+
+        <div class="flex gap-2">
+          <button
+            [disabled]="isFirst()"
+            (click)="onPageChange(currentPage() - 1)"
+            class="inline-flex items-center justify-center p-1.5 h-8 w-8 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-fc-green disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon name="chevron-left" class="h-4 w-4"></lucide-icon>
+          </button>
+
+          <button
+            [disabled]="isLast()"
+            (click)="onPageChange(currentPage() + 1)"
+            class="inline-flex items-center justify-center p-1.5 h-8 w-8 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-fc-green disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <lucide-icon name="chevron-right" class="h-4 w-4"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

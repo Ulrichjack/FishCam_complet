@@ -1,0 +1,108 @@
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Poissonneries</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez les différentes boutiques de votre réseau.</p>
+    </div>
+    <button (click)="openCreatePanel()" class="inline-flex items-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium shadow-sm">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon> Nouvelle Boutique
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    
+    <!-- Filtre Actif/Inactif -->
+    <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex justify-end">
+      <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)" 
+              class="w-full sm:w-auto px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm text-gray-700 bg-white">
+        <option value="ALL">Tous les statuts</option>
+        <option value="ACTIVE">Actifs uniquement</option>
+        <option value="INACTIVE">Inactifs uniquement</option>
+      </select>
+    </div>
+
+    <div class="block custom-scrollbar w-full overflow-x-auto">
+      <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b [&_td]:py-4 [&_td]:px-3">
+        <thead>
+          <tr>
+            <th>Nom</th>
+            <th>Adresse & Contact</th>
+            <th>Finances</th>
+            <th>Statut</th>
+            <th class="text-right pr-6">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (store.isLoading() && !store.poissonneriesPage()) {
+            <tr><td colspan="5" class="py-8 text-center text-gray-500"><lucide-icon name="loader-circle" class="h-6 w-6 animate-spin mx-auto"></lucide-icon></td></tr>
+          } @else {
+            <!-- ON BOUCLE SUR filteredPoissonneries() -->
+            @for (p of filteredPoissonneries(); track p.id) {
+              <tr class="hover:bg-gray-50">
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><lucide-icon name="building-2" class="h-5 w-5"></lucide-icon></div>
+                    <p class="font-bold text-gray-900">{{ p.name }}</p>
+                  </div>
+                </td>
+                <td>
+                  <p class="text-sm text-gray-900">{{ p.address || '-' }}</p>
+                  <p class="text-xs text-gray-500">{{ p.phone || '-' }}</p>
+                </td>
+                <td>
+                  <p class="text-sm text-gray-900">Loyer: {{ p.loyer | currencyFcfa }}</p>
+                  <p class="text-xs text-gray-500">Caisse: {{ p.fondDeCaisseDefaut | currencyFcfa }}</p>
+                </td>
+                <td>
+                  <div class="flex flex-col gap-1">
+                    @if (p.active) { <span class="inline-flex w-fit px-2 py-0.5 bg-fc-green-light text-fc-green text-xs font-bold rounded-full">Actif</span> }
+                    @else { <span class="inline-flex w-fit px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">Inactif</span> }
+                    
+                    @if (p.pretActif) { <span class="text-[10px] text-fc-orange font-bold">Crédit autorisé</span> }
+                    @else { <span class="text-[10px] text-gray-400">Comptant uniquement</span> }
+                  </div>
+                </td>
+                <td class="text-right pr-6">
+                  <div class="flex items-center justify-end gap-2">
+                    <button (click)="openEditPanel(p)" class="p-1.5 text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-md"><lucide-icon name="pencil" class="h-4 w-4"></lucide-icon></button>
+                    @if (authStore.isSuperAdmin()) {
+                      @if (p.active) {
+                        <button (click)="confirmDelete(p)" class="p-1.5 text-fc-red bg-fc-red-light hover:bg-fc-red hover:text-white rounded-md"><lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon></button>
+                      } @else {
+                        <button (click)="reactivatePoissonnerie(p.id)" class="p-1.5 text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md"><lucide-icon name="circle-check" class="h-4 w-4"></lucide-icon></button>
+                      }
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="py-8 text-center text-gray-500">Aucune poissonnerie trouvée.</td></tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between p-4 border-t border-gray-200">
+      <p class="text-sm text-gray-500">
+        Page {{ (store.poissonneriesPage()?.page?.number ?? store.poissonneriesPage()?.number ?? 0) + 1 }} sur {{ store.poissonneriesPage()?.page?.totalPages ?? store.poissonneriesPage()?.totalPages ?? 1 }}
+      </p>
+      <div class="flex gap-2">
+        <button (click)="onPageChange((store.poissonneriesPage()?.number || 0) - 1)" [disabled]="store.poissonneriesPage()?.first" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+          <lucide-icon name="chevron-left" class="h-4 w-4"></lucide-icon>
+        </button>
+        <button (click)="onPageChange((store.poissonneriesPage()?.number || 0) + 1)" [disabled]="store.poissonneriesPage()?.last" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+          <lucide-icon name="chevron-right" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<app-slide-over-panel [isOpen]="isSlideOverOpen()" [title]="poissonnerieToEdit() ? 'Modifier la boutique' : 'Nouvelle Boutique'" (closed)="isSlideOverOpen.set(false)">
+  <app-poissonnerie-form [poissonnerieToEdit]="poissonnerieToEdit()" [isLoading]="store.isLoading()" (cancel)="isSlideOverOpen.set(false)" (save)="onSavePoissonnerie($event)"></app-poissonnerie-form>
+</app-slide-over-panel>
+
+<app-confirm-dialog [isOpen]="isConfirmOpen()" title="Désactiver la boutique" [message]="'Désactiver ' + poissonnerieToDelete()?.name + ' ?'" confirmText="Désactiver" (cancelled)="isConfirmOpen.set(false)" (confirmed)="executeDelete()"></app-confirm-dialog>

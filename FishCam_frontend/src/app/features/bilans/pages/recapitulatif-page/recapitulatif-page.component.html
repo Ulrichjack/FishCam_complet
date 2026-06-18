@@ -1,0 +1,104 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Récapitulatif des Ventes</h1>
+      <p class="text-sm text-gray-500 mt-1">Générez l'inventaire complet sur une période donnée.</p>
+    </div>
+  </div>
+
+  <!-- Filtres -->
+  <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-wrap items-end gap-4">
+    <div>
+      <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Date de début</label>
+      <input type="date" [ngModel]="startDate()" (ngModelChange)="startDate.set($event)" class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Date de fin</label>
+      <input type="date" [ngModel]="endDate()" (ngModelChange)="endDate.set($event)" class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
+    </div>
+    <button (click)="generateReport()" [disabled]="store.isLoading()" class="bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2 disabled:opacity-50">
+      @if (store.isLoading()) {
+        <lucide-icon name="loader-circle" class="h-4 w-4 animate-spin"></lucide-icon>
+      } @else {
+        <lucide-icon name="clipboard-list" class="h-4 w-4"></lucide-icon>
+      }
+      Générer le récapitulatif
+    </button>
+  </div>
+
+  @if (store.error()) {
+    <div class="bg-fc-red-light border border-fc-red text-fc-red p-6 rounded-xl flex flex-col items-center text-center">
+      <lucide-icon name="triangle-alert" class="h-10 w-10 mb-3"></lucide-icon>
+      <p class="font-bold text-lg mb-1">Erreur</p>
+      <p>{{ store.error() }}</p>
+    </div>
+  } @else if (store.recapitulatif(); as recap) {
+
+    <!-- KPI SUMMARY -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Total Achats</p>
+        <p class="text-xl font-bold text-gray-900">{{ recap.totalAchat | currencyFcfa }}</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Vente Prévisible</p>
+        <p class="text-xl font-bold text-gray-900">{{ recap.totalPrevu | currencyFcfa }}</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Vente Réalisée</p>
+        <p class="text-xl font-bold text-gray-900">{{ recap.totalRealise | currencyFcfa }}</p>
+      </div>
+      <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">Bénéfice Période</p>
+        <p class="text-xl font-bold" [ngClass]="recap.totalBenefice >= 0 ? 'text-fc-green' : 'text-fc-red'">
+          {{ recap.totalBenefice >= 0 ? '+' : '' }}{{ recap.totalBenefice | currencyFcfa }}
+        </p>
+      </div>
+    </div>
+
+    <!-- TABLEAU DÉTAILLÉ -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50">
+        <h2 class="font-bold text-gray-900">Détail par jour</h2>
+        <button (click)="downloadPdf()" class="text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-md flex items-center gap-2 transition-colors">
+          <lucide-icon name="file-text" class="h-4 w-4"></lucide-icon> Télécharger PDF
+        </button>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm text-left">
+          <thead class="bg-gray-100 text-gray-500 uppercase text-xs font-semibold">
+            <tr>
+              <th class="px-4 py-3">Date</th>
+              <th class="px-4 py-3 text-right">Montant Achat</th>
+              <th class="px-4 py-3 text-right">Vente Prév.</th>
+              <th class="px-4 py-3 text-right">Vente Réal.</th>
+              <th class="px-4 py-3 text-right">Dépenses</th>
+              <th class="px-4 py-3 text-right">Marge</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            @for (ligne of recap.lignes; track ligne.jour) {
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-3 font-medium text-gray-900">{{ ligne.jour | date:'dd/MM/yyyy' }}</td>
+                <td class="px-4 py-3 text-right">{{ ligne.achat | currencyFcfa }}</td>
+                <td class="px-4 py-3 text-right">{{ ligne.prevu | currencyFcfa }}</td>
+                <td class="px-4 py-3 text-right font-medium text-gray-900">{{ ligne.realise | currencyFcfa }}</td>
+                <td class="px-4 py-3 text-right text-fc-red">{{ ligne.depenses | currencyFcfa }}</td>
+                <td class="px-4 py-3 text-right font-bold" [ngClass]="ligne.benefice >= 0 ? 'text-fc-green' : 'text-fc-red'">
+                  {{ ligne.benefice >= 0 ? '+' : '' }}{{ ligne.benefice | currencyFcfa }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="py-8 text-center text-gray-500">Aucune donnée pour cette période.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>

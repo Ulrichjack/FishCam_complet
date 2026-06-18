@@ -1,0 +1,41 @@
+/* You can add global styles to this file, and also import other style files */
+@import "tailwindcss";
+@source "./**/*.{html,ts}";
+
+a[routerLink].sidebar-link-active {
+  color: var(--color-fc-green);
+  font-weight: 600; /* semibold */
+}
+a[routerLink].sidebar-link-active-danger {
+  color: var(--color-fc-red);
+  font-weight: 600; /* semibold */
+}
+
+@theme{
+    --color-fc-green: #185216;
+    --color-fc-green-light: #E8F5E9;
+    --color-fc-green-dark: #0a330a;
+
+    /*Accent*/
+    --color-fc-yellow: #F59E0B;
+    --color-fc-yellow-light:#FEF3C7;
+    --color-fc-yellow-dark: #D97706;
+    --color-fc-orange: #F97316;
+
+
+    /*Danger*/
+    --color-fc-red: #DC2626;
+    --color-fc-red-light:#FEF2F2;
+     --color-fc-red-dark: #B91C1C;
+
+    /*Neutral*/
+    --color-fc-text:#111827;
+    --color-fc-text-muted:#6B7280;
+    --color-fc-bg: #F9FAFB;
+    --color-fc-white:#FFFFFF;
+    --color-fc-border: #E5E7EB;
+
+
+
+
+}

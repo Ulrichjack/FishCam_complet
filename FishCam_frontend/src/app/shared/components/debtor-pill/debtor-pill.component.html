@@ -1,0 +1,13 @@
+<!-- The main pill container -->
+<div class="inline-flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full font-medium text-xs sm:text-sm"
+     [ngClass]="pillBackgroundClass()">
+
+  <!-- The new status circle -->
+  <div class="h-2 w-2 rounded-full" [ngClass]="statusCircleClass()"></div>
+
+  <!-- Debtor Info -->
+  <span class="font-semibold text-red-600">{{ debtor().client.firstName }} {{ debtor().client.lastName }}</span>
+  <span class="opacity-50">·</span>
+  <span class="font-bold ">{{ debtor().solde | currencyFcfa }} FCFA</span>
+
+</div>

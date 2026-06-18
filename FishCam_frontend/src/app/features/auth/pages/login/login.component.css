@@ -1,0 +1,115 @@
+  /* ── Champ input ── */
+  .fc-field-group { display:flex; flex-direction:column; }
+  .fc-label {
+    display:block;
+    margin-bottom:6px;
+    font-size:.825rem;
+    font-weight:600;
+    color:#111827;
+  }
+  .fc-input-wrap {
+    display:flex;
+    align-items:center;
+    height:52px;
+    border-radius:12px;
+    border:1.5px solid #e5e7eb;
+    background:#f9fafb;
+    overflow:hidden;
+    transition:border-color .2s, box-shadow .2s, background .2s;
+  }
+  .fc-input-wrap:focus-within {
+    border-color:#185216;
+    background:#fff;
+    box-shadow:0 0 0 3px rgba(24,82,22,.12);
+  }
+  .fc-input-wrap.fc-input-error { border-color:#8B1A1A; }
+  .fc-input-wrap.fc-input-error:focus-within {
+    box-shadow:0 0 0 3px rgba(139,26,26,.10);
+  }
+  .fc-prefix {
+    display:flex;
+    align-items:center;
+    padding:0 12px;
+    height:100%;
+    background:#f3f4f6;
+    border-right:1px solid #e5e7eb;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .fc-input {
+    flex:1;
+    height:100%;
+    background:transparent;
+    border:none;
+    outline:none;
+    font-size:.9rem;
+    color:#111827;
+    padding-right:14px;
+  }
+  .fc-input::placeholder { color:#9ca3af; }
+
+  /* ── Bouton principal ── */
+  .fc-btn-submit {
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:100%;
+    height:52px;
+    margin-top:8px;
+    border-radius:12px;
+    border:none;
+    cursor:pointer;
+    font-family:'Inter',sans-serif;
+    font-size:.9rem;
+    font-weight:700;
+    color:#fff;
+    overflow:hidden;
+    background:#185216;
+    box-shadow:0 6px 20px rgba(24,82,22,.32);
+    transition:background .2s, transform .15s, box-shadow .2s;
+  }
+  .fc-btn-submit:hover:not(:disabled) {
+    background:#135513;
+    transform:translateY(-1px);
+    box-shadow:0 10px 28px rgba(24,82,22,.38);
+  }
+  .fc-btn-submit:active:not(:disabled) { transform:translateY(0); }
+  .fc-btn-submit:disabled { opacity:.9; cursor:not-allowed; }
+
+  /* ── Illustration ── */
+  .fc-illustration-wrap {
+    width: 480px;
+    max-width: 90%;
+    filter: drop-shadow(0 24px 48px rgba(24,82,22,.14));
+    animation: fc-float 5s ease-in-out infinite;
+  }
+  .fc-illustration-img { width:100%; height:auto; display:block; }
+
+  @keyframes fc-float {
+    0%, 100% { transform: translateY(0px); }
+    50%       { transform: translateY(-12px); }
+  }
+
+  /* ── Badges ── */
+  .fc-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding:6px 12px;
+    border-radius:99px;
+    font-size:.72rem;
+    font-weight:600;
+    color:#374151;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    box-shadow:0 1px 4px rgba(0,0,0,.05);
+  }
+
+  .fc-text-brand {
+  color: #185216;
+}
+.fc-bg-gradient {
+  background: linear-gradient(135deg, #e4f5e5 0%, #ebfaf3 40%, #fffde7 100%);
+}
+

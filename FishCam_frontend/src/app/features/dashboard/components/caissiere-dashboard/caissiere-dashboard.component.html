@@ -1,0 +1,78 @@
+<div class="flex flex-col gap-6">
+  
+  <!-- 1. GREETING -->
+  <div class="flex flex-col gap-1">
+    <app-greeting-header [userName]="authStore.user()?.firstName || 'Utilisateur'"></app-greeting-header>
+  </div>
+
+  <!-- 2. SUMMARY CARDS (Using Reusable Components!) -->
+  <!-- 2. SUMMARY CARDS -->
+  <!-- 2. SUMMARY CARDS -->
+  @if (dashboardStore.stats(); as stats) {
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      
+      <app-stat-card
+        label="Factures aujourd'hui"
+        [value]="facturesCount() + ' factures'"
+        icon="file-text"
+        colorVariant="green">
+      </app-stat-card>
+
+      <app-stat-card
+        label="Total Dettes Clients"
+        [value]="stats.courantResponse.totalDettes | currencyFcfa"
+        icon="trending-down"
+        colorVariant="red">
+      </app-stat-card>
+
+      <app-stat-card
+        label="Total Épargnes Clients"
+        [value]="stats.epargnes.totalEpargne | currencyFcfa"
+        icon="circle-dollar-sign"
+        colorVariant="green">
+      </app-stat-card>
+
+    </div>
+  }
+
+  <!-- 3. ALERT RIBBON -->
+  <app-alert-ribbon></app-alert-ribbon>
+
+  <!-- 4. QUICK ACTIONS -->
+  <!-- <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Actions Rapides</h3>
+    <div class="flex flex-wrap gap-4">
+      <button 
+        class="bg-fc-red hover:bg-fc-red-dark text-white px-4 py-2 rounded-lg transition-colors"
+        (click)="openTransactionModal('emprunt', 'Enregistrer un Emprunt')">
+        Enregistrer un Emprunt
+      </button>
+
+      <button 
+        class="bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2 rounded-lg transition-colors"
+        (click)="openTransactionModal('remboursement', 'Enregistrer un Remboursement')">
+        Enregistrer un Remboursement
+      </button>
+    </div>
+  </div> -->
+
+  <!-- 5. NOTIFICATIONS -->
+  <div class="h-auto">
+    <app-notification-preview></app-notification-preview>
+  </div>
+
+  <!-- 6. MODAL -->
+  <app-modal [isOpen]="isModalOpen()" [title]="modalTitle()" (closed)="isModalOpen.set(false)">
+    @if (currentAction()) {
+      <app-transaction-form 
+        [mode]="currentAction()!"
+        clientName="Client à sélectionner..."
+        [currentBalance]="0"
+        [maxAmount]="null"
+        (cancel)="isModalOpen.set(false)"
+        (save)="onSaveTransaction($event)">
+      </app-transaction-form>
+    }
+  </app-modal>
+
+</div>

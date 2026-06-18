@@ -1,0 +1,59 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Comptes en Dépassement</h1>
+      <p class="text-sm text-gray-500 mt-1">
+        Surveillez les clients dont le solde débiteur est élevé et enregistrez leurs remboursements.
+      </p>
+    </div>
+  </div>
+
+  <!-- Main Content Area -->
+  @if (store.isLoading() && store.debtors().length === 0) {
+    <div class="p-6 bg-white rounded-xl border border-gray-200">
+      <app-loading-skeleton [rows]="3"></app-loading-skeleton>
+    </div>
+  } @else if (store.error()) {
+    <app-error-state 
+      [error]="store.error()!" 
+      (retryClicked)="store.loadDebtors(authStore.activePoissonnerieId()!)">
+    </app-error-state>
+  } @else if (store.debtors().length === 0) {
+    <div class="bg-white rounded-xl border border-gray-200 py-8">
+      <app-empty-state 
+        icon="circle-check" 
+        title="Excellente nouvelle !" 
+        message="Aucun client n'est actuellement en situation de dette dans cette poissonnerie."
+        [actionLabel]="null">
+      </app-empty-state>
+    </div>
+  } @else {
+    <!-- Grille des cartes -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      @for (compte of store.debtors(); track compte.id) {
+        <app-debtor-card 
+          [compte]="compte" 
+          (reimburseClicked)="openReimburseModal($event)">
+        </app-debtor-card>
+      }
+    </div>
+  }
+
+</div>
+
+<!-- Modale de Remboursement -->
+@if (isModalOpen() && selectedCompte()) {
+  <app-modal [isOpen]="isModalOpen()" title="Enregistrer un remboursement" (closed)="isModalOpen.set(false)">
+    <app-transaction-form
+      mode="remboursement"
+      [clientName]="selectedCompte()!.client.firstName + ' ' + selectedCompte()!.client.lastName"
+      [currentBalance]="selectedCompte()!.solde" 
+      [maxAmount]="selectedCompte()!.solde * -1"
+      (cancel)="isModalOpen.set(false)"
+      (save)="onSaveTransaction($event)">
+    </app-transaction-form>
+  </app-modal>
+
+}

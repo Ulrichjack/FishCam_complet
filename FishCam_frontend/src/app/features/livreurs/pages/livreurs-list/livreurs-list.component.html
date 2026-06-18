@@ -1,0 +1,183 @@
+<div class="flex flex-col gap-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Livreurs</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez les livreurs et chargeurs de vos fournisseurs.</p>
+    </div>
+    <button (click)="openCreatePanel()" class="inline-flex items-center justify-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      Nouveau Livreur
+    </button>
+  </div>
+
+  <!-- Table Card -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    
+    <!-- Search Bar (Frontend only) -->
+    <div class="p-4 border-b border-gray-200 bg-gray-50/50">
+      <div class="relative w-full max-w-md">
+        <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-icon>
+        <input type="text" (input)="onSearch($event)" placeholder="Rechercher un livreur..." 
+               class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
+      </div>
+    </div>
+
+    <div class="block custom-scrollbar w-full max-w-full overflow-x-auto">
+      <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+        <thead>
+          <tr>
+            <th>Nom complet</th>
+            <th>Téléphone</th>
+            <th>Fournisseur</th>
+            <th>Statut</th>
+            <th class="text-right pr-6">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (store.isLoading()) {
+            <tr>
+              <td colspan="5" class="py-8 text-center text-gray-500">
+                <lucide-icon name="loader-circle" class="h-6 w-6 animate-spin mx-auto mb-2"></lucide-icon>
+                Chargement...
+              </td>
+            </tr>
+          } @else {
+            @for (livreur of filteredLivreurs(); track livreur.id) {
+              <tr class="group transition-colors" [class.opacity-60]="!livreur.actif">
+                <td class="font-medium text-gray-900">{{ livreur.prenom }} {{ livreur.nom }}</td>
+                <td class="text-gray-600">{{ livreur.telephone || '-' }}</td>
+                <td class="text-gray-600">{{ livreur.fournisseurNom }}</td>
+                <td>
+                  @if (livreur.actif) {
+                    <span class="px-2.5 py-1 bg-fc-green-light text-fc-green text-xs font-medium rounded-full border border-fc-green">Actif</span>
+                  } @else {
+                    <span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full border border-gray-300">Inactif</span>
+                  }
+                </td>
+                <td class="text-right pr-6">
+                  <div class="flex items-center justify-end gap-2">
+                    <button (click)="openEditPanel(livreur)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-md transition-colors">
+                      <lucide-icon name="pencil" class="h-3.5 w-3.5"></lucide-icon> Modifier
+                    </button>
+                    <button (click)="toggleStatut(livreur.id)" 
+                            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
+                            [class.text-fc-red]="livreur.actif" [class.bg-fc-red-light]="livreur.actif" [class.hover:bg-fc-red]="livreur.actif" [class.hover:text-white]="livreur.actif"
+                            [class.text-fc-green]="!livreur.actif" [class.bg-fc-green-light]="!livreur.actif" [class.hover:bg-fc-green]="!livreur.actif" [class.hover:text-white]="!livreur.actif">
+                      <lucide-icon [name]="livreur.actif ? 'pause' : 'play'" class="h-3.5 w-3.5"></lucide-icon> 
+                      {{ livreur.actif ? 'Désactiver' : 'Activer' }}
+                    </button>
+
+                    <button (click)="openEvaluationsPanel(livreur)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-yellow-dark bg-fc-yellow-light hover:bg-fc-yellow hover:text-white rounded-md transition-colors">
+                      <lucide-icon name="star" class="h-3.5 w-3.5"></lucide-icon> Évaluations
+                    </button>
+
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="py-12 text-center text-gray-500">
+                  <lucide-icon name="truck" class="h-8 w-8 mx-auto mb-3 text-gray-300"></lucide-icon>
+                  <p class="text-base font-medium text-gray-900">Aucun livreur trouvé</p>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-over Panel -->
+<app-slide-over-panel
+  [isOpen]="isSlideOverOpen()"
+  title="Nouveau Livreur"
+  (closed)="isSlideOverOpen.set(false)">
+  
+  @if (store.error()) {
+    <div class="mb-4 rounded-md bg-fc-red-light p-4 text-sm text-fc-red font-medium">
+      {{ store.error() }}
+    </div>
+  }
+
+  <app-livreur-form
+    [livreurToEdit]="livreurToEdit()"
+    [isLoading]="store.isLoading()"
+    (cancel)="isSlideOverOpen.set(false)"
+    (save)="onSaveLivreur($event)">
+  </app-livreur-form>
+</app-slide-over-panel>
+
+<!-- Slide-over Panel pour les Évaluations -->
+<app-slide-over-panel
+  [isOpen]="isEvalSlideOverOpen()"
+  [title]="'Évaluations : ' + livreurToView()?.prenom + ' ' + livreurToView()?.nom"
+  (closed)="isEvalSlideOverOpen.set(false)">
+  
+  @if (evalStore.isLoading()) {
+    <div class="flex justify-center py-12">
+      <lucide-icon name="loader-circle" class="h-8 w-8 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else {
+    
+    <!-- Statistiques Globales du Livreur -->
+    <div class="grid grid-cols-2 gap-4 mb-6">
+      <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+        <p class="text-xs text-gray-500 uppercase font-bold mb-1">Moy. Qualité</p>
+        <p class="text-2xl font-bold text-fc-yellow-dark flex items-center justify-center gap-1">
+          {{ evalStore.moyenneQualite() | number:'1.1-1' }} <lucide-icon name="star" class="h-5 w-5 fill-fc-yellow"></lucide-icon>
+        </p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+        <p class="text-xs text-gray-500 uppercase font-bold mb-1">Moy. Poids</p>
+        <p class="text-2xl font-bold text-fc-yellow-dark flex items-center justify-center gap-1">
+          {{ evalStore.moyennePoids() | number:'1.1-1' }} <lucide-icon name="star" class="h-5 w-5 fill-fc-yellow"></lucide-icon>
+        </p>
+      </div>
+    </div>
+
+    @if (evalStore.nombreProblemes() > 0) {
+      <div class="bg-red-50 border border-red-200 p-3 rounded-lg mb-6 flex items-center gap-3">
+        <lucide-icon name="triangle-alert" class="h-5 w-5 text-red-600"></lucide-icon>
+        <p class="text-sm text-red-800 font-medium">Ce livreur a eu {{ evalStore.nombreProblemes() }} problème(s) signalé(s).</p>
+      </div>
+    }
+
+    <!-- Liste des évaluations -->
+    <h3 class="font-bold text-gray-900 mb-4">Historique des livraisons</h3>
+    
+    <div class="space-y-4">
+      @for (eval of evalStore.evaluations(); track eval.id) {
+        <div class="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+          <div class="flex justify-between items-start mb-2">
+            <span class="text-xs font-bold text-gray-500">{{ eval.dateEvaluation | date:'dd/MM/yyyy' }}</span>
+            <span class="text-xs text-gray-400">Par {{ eval.evaluatorNom }}</span>
+          </div>
+          
+          <div class="flex justify-between text-sm mb-1">
+            <span class="text-gray-700">Qualité :</span>
+            <span class="font-bold text-gray-900">{{ eval.qualiteProduit }} / 5</span>
+          </div>
+          <div class="flex justify-between text-sm mb-2">
+            <span class="text-gray-700">Poids :</span>
+            <span class="font-bold text-gray-900">{{ eval.respectPoids }} / 5</span>
+          </div>
+
+          @if (eval.problemeSignale) {
+            <span class="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-800 text-xs font-medium rounded mb-2">
+              <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> Problème signalé
+            </span>
+          }
+
+          @if (eval.commentaire) {
+            <p class="text-sm text-gray-600 italic bg-gray-50 p-2 rounded mt-2">"{{ eval.commentaire }}"</p>
+          }
+        </div>
+      } @empty {
+        <p class="text-center text-gray-500 py-8">Aucune évaluation pour ce livreur.</p>
+      }
+    </div>
+  }
+</app-slide-over-panel>

@@ -1,0 +1,156 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Fournisseurs</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez la liste de vos fournisseurs de poisson.</p>
+    </div>
+
+    <button (click)="openCreatePanel()" class="inline-flex items-center justify-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      Nouveau Fournisseur
+    </button>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <!-- Search Bar & Filters -->
+    <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row gap-4 justify-between">
+      
+      <!-- Search -->
+      <div class="relative w-full max-w-md">
+        <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-icon>
+        <input type="text" (input)="onSearch($event)" placeholder="Rechercher un fournisseur..." 
+              class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
+      </div>
+
+      <!-- Filtre Actif/Inactif -->
+      <div class="flex gap-3 w-full sm:w-auto">
+        <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)" 
+                class="w-full sm:w-auto px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm text-gray-700 bg-white">
+          <option value="ALL">Tous les statuts</option>
+          <option value="ACTIVE">Actifs uniquement</option>
+          <option value="INACTIVE">Inactifs uniquement</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- The Table Area -->
+    <div class="block custom-scrollbar w-full max-w-full overflow-x-auto scroll-smooth">
+      
+      <!-- 1. ÉTAT DE CHARGEMENT -->
+      @if (store.isLoading() && store.fournisseurs().length === 0) {
+        <div class="p-6">
+          <app-loading-skeleton [rows]="4"></app-loading-skeleton>
+        </div>
+      } 
+      
+      <!-- 2. ÉTAT D'ERREUR -->
+      @else if (store.error()) {
+        <app-error-state 
+          [error]="store.error()!" 
+          (retryClicked)="store.loadFournisseurs()">
+        </app-error-state>
+      } 
+      
+      <!-- 3. ÉTAT VIDE -->
+      @else if (filteredFournisseurs().length === 0) {
+        <app-empty-state 
+          icon="store" 
+          title="Aucun fournisseur trouvé" 
+          message="Commencez par ajouter un nouveau fournisseur de poisson."
+          actionLabel="Nouveau Fournisseur"
+          (actionClicked)="openCreatePanel()">
+        </app-empty-state>
+      } 
+      
+      <!-- 4. ÉTAT SUCCÈS (LA TABLE) -->
+      @else {
+        <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Téléphone</th>
+              <th>Ville</th>
+              <th class="text-right pr-6">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fournisseur of filteredFournisseurs(); track fournisseur.id) {
+              <tr class="group transition-colors">
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-600 font-bold text-sm">
+                      <lucide-icon name="store" class="h-5 w-5"></lucide-icon>
+                    </div>
+                    <div>
+                      <p class="font-medium text-gray-900">{{ fournisseur.nom }}</p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <p class="text-gray-700">{{ fournisseur.telephone || '-' }}</p>
+                </td>
+                <td>
+                  <p class="text-gray-700">{{ fournisseur.ville }}</p>
+                </td>
+                <td class="text-right py-4 pr-6">
+                  <div class="flex items-center justify-end gap-2">
+                    @if (fournisseur.actif) {
+                      <button (click)="openEditPanel(fournisseur)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="Modifier">
+                        <lucide-icon name="pencil" class="h-3.5 w-3.5"></lucide-icon>
+                        <span class="hidden xl:inline">Modifier</span>
+                      </button>
+                      <button (click)="confirmDelete(fournisseur)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-red bg-fc-red-light hover:bg-fc-red hover:text-white rounded-md transition-colors" title="Désactiver">
+                        <lucide-icon name="trash-2" class="h-3.5 w-3.5"></lucide-icon>
+                        <span class="hidden xl:inline">Désactiver</span>
+                      </button>
+                    } @else {
+                      <button (click)="reactivateFournisseur(fournisseur.id)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md transition-colors" title="Réactiver">
+                        <lucide-icon name="circle-check" class="h-3.5 w-3.5"></lucide-icon>
+                        <span class="hidden xl:inline">Réactiver</span>
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Slide-over Panel -->
+<app-slide-over-panel
+  [isOpen]="isSlideOverOpen()"
+  [title]="fournisseurToEdit() ? 'Modifier le fournisseur' : 'Nouveau Fournisseur'"
+  (closed)="isSlideOverOpen.set(false)">
+  
+  @if (store.error()) {
+    <div class="m-4 rounded-md bg-fc-red-light p-4">
+      <p class="text-sm text-fc-red font-medium">Erreur: {{ store.error() }}</p>
+    </div>
+  }
+
+  <app-fournisseur-form
+    [fournisseurToEdit]="fournisseurToEdit()"
+    [isLoading]="store.isLoading()"
+    (cancel)="isSlideOverOpen.set(false)"
+    (save)="onSaveFournisseur($event)">
+  </app-fournisseur-form>
+
+</app-slide-over-panel>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen()"
+  title="Désactiver le fournisseur"
+  [message]="'Êtes-vous sûr de vouloir désactiver ' + fournisseurToDelete()?.nom + ' ?'"
+  confirmText="Désactiver"
+  (cancelled)="isConfirmOpen.set(false)"
+  (confirmed)="executeDelete()">
+</app-confirm-dialog>

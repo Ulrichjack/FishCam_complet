@@ -1,0 +1,187 @@
+<!-- ─── src/app/features/admin/pages/backup-page/backup-page.component.html ───────── -->
+<div class="flex flex-col gap-6 max-w-5xl mx-auto">
+
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Sauvegarde & Synchronisation</h1>
+      <p class="text-sm text-gray-500 mt-1">Sécurisez les données de votre ERP sur le Cloud et en local.</p>
+    </div>
+  </div>
+
+  @if (store.isLoading() && !store.status()) {
+    <div class="flex justify-center py-12">
+      <lucide-icon name="loader-circle" class="h-8 w-8 animate-spin text-fc-green"></lucide-icon>
+    </div>
+  } @else if (store.status(); as status) {
+
+    <!-- ⚠️ BANNIÈRE D'ALERTE (Si une sauvegarde Cloud est manquée) -->
+    @if (status.weeklyMissed || status.monthlyMissed) {
+      <div class="bg-red-50 border-l-4 border-fc-red p-4 rounded-r-xl shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-4">
+        <div class="flex items-start gap-3">
+          <lucide-icon name="triangle-alert" class="h-6 w-6 text-fc-red shrink-0"></lucide-icon>
+          <div>
+            <h3 class="text-sm font-bold text-red-800">Sauvegarde Cloud en attente !</h3>
+            <p class="text-sm text-red-700 mt-1">
+              Les données récentes ne sont pas sécurisées sur le Cloud. 
+              Veuillez partager votre connexion Internet et lancer la synchronisation.
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- GRILLE D'ÉTAT -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- CARTE 1 : ÉTAT DE LA CONNEXION -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col justify-center items-center text-center">
+        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">État du réseau local</p>
+        
+        @if (isOnline()) {
+          <div class="h-16 w-16 bg-green-100 text-fc-green rounded-full flex items-center justify-center mb-3 shadow-inner">
+            <lucide-icon name="wifi" class="h-8 w-8"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900">En Ligne</h3>
+          <p class="text-sm text-fc-green font-medium mt-1">Connexion Internet détectée.</p>
+          <p class="text-xs text-gray-500 mt-2">Vous pouvez synchroniser vos données avec le Cloud.</p>
+        } @else {
+          <div class="h-16 w-16 bg-red-100 text-fc-red rounded-full flex items-center justify-center mb-3 shadow-inner">
+            <lucide-icon name="wifi-off" class="h-8 w-8"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900">Hors Ligne</h3>
+          <p class="text-sm text-fc-red font-medium mt-1">Aucune connexion Internet.</p>
+          <p class="text-xs text-gray-500 mt-2">Le système fonctionne en local. Partagez votre connexion pour sauvegarder.</p>
+        }
+      </div>
+
+      <!-- CARTE 2 : ACTIONS DE SYNCHRONISATION -->
+      <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center gap-2">
+          <lucide-icon name="cloud-upload" class="h-5 w-5 text-fc-green"></lucide-icon>
+          <h2 class="font-bold text-gray-900">Synchronisation Cloud</h2>
+        </div>
+        
+        <div class="p-6 flex-1 flex flex-col gap-6">
+          
+          <!-- Sync Hebdomadaire -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-gray-100">
+            <div>
+              <h4 class="font-bold text-gray-900">Sauvegarde Hebdomadaire</h4>
+              <div class="flex items-center gap-2 mt-1">
+                @if (status.weeklyMissed) {
+                  <span class="flex items-center gap-1 text-xs font-bold text-fc-red bg-red-50 px-2 py-1 rounded">
+                    <lucide-icon name="circle-x" class="h-3 w-3"></lucide-icon> En retard
+                  </span>
+                } @else {
+                  <span class="flex items-center gap-1 text-xs font-bold text-fc-green bg-green-50 px-2 py-1 rounded">
+                    <lucide-icon name="check-circle" class="h-3 w-3"></lucide-icon> À jour
+                  </span>
+                }
+              </div>
+            </div>
+            
+            <button (click)="onSyncCloud()" 
+                    [disabled]="!isOnline() || store.isLoading()"
+                    class="shrink-0 flex items-center justify-center gap-2 bg-gray-900 hover:bg-black text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (store.isLoading()) {
+                <lucide-icon name="loader-circle" class="h-4 w-4 animate-spin"></lucide-icon>
+              } @else {
+                <lucide-icon name="cloud-upload" class="h-4 w-4"></lucide-icon>
+              }
+              Pousser vers le Cloud
+            </button>
+          </div>
+
+          <!-- Sync Mensuelle -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h4 class="font-bold text-gray-900">Archive Mensuelle</h4>
+              <div class="flex items-center gap-2 mt-1">
+                @if (status.monthlyMissed) {
+                  <span class="flex items-center gap-1 text-xs font-bold text-fc-red bg-red-50 px-2 py-1 rounded">
+                    <lucide-icon name="circle-x" class="h-3 w-3"></lucide-icon> En retard
+                  </span>
+                } @else {
+                  <span class="flex items-center gap-1 text-xs font-bold text-fc-green bg-green-50 px-2 py-1 rounded">
+                    <lucide-icon name="check-circle" class="h-3 w-3"></lucide-icon> À jour
+                  </span>
+                }
+              </div>
+            </div>
+            
+            <button (click)="onSyncCloud()" 
+                    [disabled]="!isOnline() || store.isLoading()"
+                    class="shrink-0 flex items-center justify-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (store.isLoading()) {
+                <lucide-icon name="loader-circle" class="h-4 w-4 animate-spin"></lucide-icon>
+              } @else {
+                <lucide-icon name="archive" class="h-4 w-4"></lucide-icon>
+              }
+              Archiver
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORIQUE GLOBAL DES SAUVEGARDES -->
+    <div class="mt-6 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 flex items-center gap-2">
+          <lucide-icon name="database" class="h-5 w-5 text-gray-500"></lucide-icon>
+          Historique global des sauvegardes
+        </h2>
+      </div>
+
+      @if (status.history && status.history.length > 0) {
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead class="bg-gray-50 text-gray-500 text-xs uppercase">
+              <tr>
+                <th class="px-6 py-3 text-left font-semibold">Date</th>
+                <th class="px-6 py-3 text-left font-semibold">Type</th>
+                <th class="px-6 py-3 text-left font-semibold">Statut</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              @for (item of status.history; track item.dateExecution) {
+                <tr class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-3 text-gray-900 font-medium">{{ item.dateExecution | date:'dd/MM/yyyy HH:mm' }}</td>
+                  <td class="px-6 py-3 text-gray-700">
+                    <span class="inline-flex items-center gap-1.5">
+                      @if (item.type === 'CLOUD_WEEKLY') {
+                        <lucide-icon name="cloud-upload" class="h-4 w-4 text-blue-500"></lucide-icon>
+                      } @else {
+                        <lucide-icon name="database" class="h-4 w-4 text-gray-500"></lucide-icon>
+                      }
+                      {{ formatType(item.type) }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-3">
+                    @if (item.success) {
+                      <span class="inline-flex items-center gap-1 text-xs font-bold text-fc-green bg-green-50 px-2 py-1 rounded">
+                        <lucide-icon name="check-circle" class="h-3 w-3"></lucide-icon> Réussi
+                      </span>
+                    } @else {
+                      <span class="inline-flex items-center gap-1 text-xs font-bold text-fc-red bg-red-50 px-2 py-1 rounded">
+                        <lucide-icon name="circle-x" class="h-3 w-3"></lucide-icon> Échec
+                      </span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <div class="p-8 text-center text-gray-500">
+          <lucide-icon name="database" class="h-8 w-8 mx-auto mb-3 text-gray-300"></lucide-icon>
+          <p>Aucune sauvegarde enregistrée pour le moment.</p>
+        </div>
+      }
+    </div>
+
+  }
+</div>

@@ -1,0 +1,113 @@
+<div class="flex flex-col gap-6">
+
+  <!-- Header Section -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Factures d'achat</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez les achats journaliers auprès des fournisseurs.</p>
+    </div>
+
+    <button routerLink="/factures/new" class="inline-flex items-center justify-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      Nouvelle Facture
+    </button>
+  </div>
+
+  <!-- Main Content Area -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+
+    <!-- Filters -->
+    <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex gap-4 items-center">
+      <div class="flex items-center gap-2">
+        <label class="text-sm font-medium text-gray-700">Date :</label>
+        <!-- DIRECTIVE: Bind this input to selectedDate() and listen to (ngModelChange)="onDateChange($event)" -->
+        <input type="date" 
+              class="px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm"
+              [ngModel]="selectedDate()" 
+              (ngModelChange)="onDateChange($event)">
+      </div>
+    </div>
+
+    <!-- The Table -->
+    <div class="block custom-scrollbar w-full max-w-full overflow-x-auto">
+      <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fournisseur</th>
+            <th>Enregistré par</th>
+            <th>Total Achat</th>
+            <th>Statut</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (factureStore.isLoading()) {
+            <tr>
+              <td colspan="6" class="py-8 text-center text-gray-500">
+                <lucide-icon name="loader-circle" class="h-6 w-6 animate-spin mx-auto mb-2"></lucide-icon>
+                Chargement des factures...
+              </td>
+            </tr>
+          } @else {
+            <!-- DIRECTIVE: Loop over factureStore.factures() using @for (track facture.id) -->
+            <!-- YOUR CODE HERE (@for) -->
+             @for(facture of factureStore.factures(); track facture.id) {
+              <tr class="group transition-colors">
+                <td class="font-medium text-gray-900">#{{ facture.id }}</td>
+                <td class="font-medium text-gray-900">{{ facture.fournisseurNom }}</td>
+                <td class="text-gray-500">{{ facture.enregistreParNom }}</td>
+                <td class="font-bold text-gray-900">{{ facture.totalAchat | currencyFcfa }} </td>
+                <td>
+                  @if (facture.cloture) {
+                    <span class="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full border border-gray-300">Clôturée</span>
+                  } @else {
+                    <span class="px-2.5 py-1 bg-fc-yellow-light text-fc-yellow-dark text-xs font-medium rounded-full border border-fc-yellow">Ouverte</span>
+                  }
+                </td>
+                <td class="text-right">
+                  <div class="flex items-center justify-end gap-2">
+                    
+                    <!-- Bouton Détails -->
+                    <button [routerLink]="['/factures', facture.id]" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md transition-colors">
+                      <lucide-icon name="eye" class="h-3.5 w-3.5"></lucide-icon>
+                      Détails
+                    </button>
+
+                    <!-- Bouton Clôturer (Seulement si non clôturée ET (Patron ou SuperAdmin)) -->
+                    @if (!facture.cloture && (authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere())){
+                      <button (click)="openCloseDialog(facture.id)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-red bg-fc-red-light hover:bg-fc-red hover:text-white rounded-md transition-colors">
+                        <lucide-icon name="lock" class="h-3.5 w-3.5"></lucide-icon>
+                        Clôturer
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }<!-- END FOR -->
+
+            @if (factureStore.factures().length === 0) {
+              <tr>
+                <td colspan="6" class="py-12 text-center text-gray-500">
+                  <lucide-icon name="file-text" class="h-8 w-8 mx-auto mb-3 text-gray-300"></lucide-icon>
+                  <p class="text-base font-medium text-gray-900">Aucune facture trouvée</p>
+                  <p class="text-sm mt-1">Il n'y a pas d'achats enregistrés pour cette date.</p>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Dialog for Clôture -->
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen()"
+  title="Clôturer la facture"
+  message="Êtes-vous sûr de vouloir clôturer cette facture ? Cette action est irréversible et vous ne pourrez plus ajouter ou modifier de lignes."
+  confirmText="Clôturer"
+  (cancelled)="isConfirmOpen.set(false)"
+  (confirmed)="executeClose()">
+</app-confirm-dialog>

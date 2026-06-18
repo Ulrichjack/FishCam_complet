@@ -1,0 +1,100 @@
+<form [formGroup]="clientForm" (ngSubmit)="onSubmit()" class="flex flex-col h-full">
+
+  <div class="flex-1 overflow-y-auto space-y-5 pb-6 px-1">
+
+    <!-- Prénom -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Prénom <span class="text-red-500">*</span></label>
+      <input type="text" formControlName="firstName" placeholder="Ex: Jean"
+             [ngClass]="{'border-red-500 focus:ring-red-500': isInvalid('firstName'), 'border-gray-300 focus:ring-fc-green': !isInvalid('firstName')}"
+             class="w-full px-3 py-2 rounded-lg border focus:ring-2 outline-none text-gray-700 transition-colors">
+      @if (isInvalid('firstName')) {
+        <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+          <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> Prénom requis
+        </p>
+      }
+    </div>
+
+    <!-- Nom -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nom <span class="text-red-500">*</span></label>
+      <input type="text" formControlName="lastName" placeholder="Ex: Kamga"
+             [ngClass]="{'border-red-500 focus:ring-red-500': isInvalid('lastName'), 'border-gray-300 focus:ring-fc-green': !isInvalid('lastName')}"
+             class="w-full px-3 py-2 rounded-lg border focus:ring-2 outline-none text-gray-700 transition-colors">
+      @if (isInvalid('lastName')) {
+        <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+          <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> Nom requis
+        </p>
+      }
+    </div>
+
+    <!-- Téléphone -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Téléphone <span class="text-red-500">*</span></label>
+      <div class="flex rounded-lg border overflow-hidden focus-within:ring-2 transition-all"
+           [ngClass]="{'border-red-500 focus-within:ring-red-500': isInvalid('phone'), 'border-gray-300 focus-within:ring-fc-green': !isInvalid('phone')}">
+        <div class="flex items-center bg-gray-50 px-3 border-r border-gray-300 text-gray-500 text-sm shrink-0">
+          🇨🇲 <span class="ml-1 font-semibold">+237</span>
+        </div>
+        <input type="tel" formControlName="phone" placeholder="690 123 456" class="w-full px-3 py-2 outline-none text-gray-700">
+      </div>
+      @if (isInvalid('phone')) {
+        <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+          <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> Numéro invalide (9 chiffres)
+        </p>
+      }
+    </div>
+
+    <!-- Quartier -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Quartier <span class="text-red-500">*</span></label>
+      <input type="text" formControlName="quartier" placeholder="Ex: Akwa"
+             [ngClass]="{'border-red-500 focus:ring-red-500': isInvalid('quartier'), 'border-gray-300 focus:ring-fc-green': !isInvalid('quartier')}"
+             class="w-full px-3 py-2 rounded-lg border focus:ring-2 outline-none text-gray-700 transition-colors">
+      @if (isInvalid('quartier')) {
+        <p class="mt-1 text-xs text-red-500 flex items-center gap-1">
+          <lucide-icon name="triangle-alert" class="h-3 w-3"></lucide-icon> Quartier requis
+        </p>
+      }
+    </div>
+
+    <!-- Adresse (Optionnelle) -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Adresse  <span class="text-gray-400 font-normal">(Optionnel)</span></label>
+      <input type="text" formControlName="address" placeholder="Ex: Rue des cocotiers"
+             class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-gray-700 transition-colors">
+    </div>
+
+    <!-- CNI (Optionnelle) -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">N° CNI  <span class="text-gray-400 font-normal">(Optionnel)</span></label>
+      <input type="text" formControlName="cni" placeholder="Numéro de CNI"
+             class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-gray-700 transition-colors">
+    </div>
+
+    <!-- DATE DE NAISSANCE -->
+    <div>
+          <label for="dateOfBirth" class="block text-sm font-medium text-gray-700 mb-1">Date de naissance</label>
+          <input type="date" id="dateOfBirth" formControlName="dateOfBirth"
+            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-fc-green focus:border-fc-green outline-none transition-colors">
+    </div>
+  </div>
+
+  <!-- Fixed Footer Buttons -->
+  <div class="pt-4 border-t border-gray-200 flex justify-end gap-3 mt-auto">
+    <button type="button" (click)="cancel.emit()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+      Annuler
+    </button>
+    <button type="submit"
+            [disabled]="isLoading() || clientForm.invalid"
+            class="px-4 py-2 text-sm font-medium text-white bg-fc-green rounded-lg hover:bg-fc-green-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+      @if (isLoading()) {
+        <lucide-icon name="loader-circle" class="h-4 w-4 animate-spin inline mr-2"></lucide-icon>
+        Enregistrement...
+      } @else {
+        {{ clientToEdit() ? 'Modifier' : 'Créer le client' }}
+      }
+    </button>
+  </div>
+
+</form>

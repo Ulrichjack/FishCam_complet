@@ -1,0 +1,151 @@
+<!-- src/app/features/admin/pages/equipe-list/equipe-list.component.html -->
+<div class="flex flex-col gap-6">
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Équipe</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez les accès et les rôles de vos employés.</p>
+    </div>
+    <button (click)="openCreatePanel()" class="inline-flex items-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium shadow-sm">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon> Nouvel Employé
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div class="block custom-scrollbar w-full overflow-x-auto">
+    @if (store.isLoading() && (!store.usersPage() || store.usersPage()?.content?.length === 0)) {
+        <div class="p-6">
+          <app-loading-skeleton [rows]="5"></app-loading-skeleton>
+        </div>
+      } @else if (store.error()) {
+        <app-error-state 
+          [error]="store.error()!" 
+          (retryClicked)="store.loadUsers(0)">
+        </app-error-state>
+      } @else if (store.usersPage()?.content?.length === 0) {
+        <app-empty-state 
+          icon="user-cog" 
+          title="Aucun employé trouvé" 
+          message="Commencez par ajouter un membre à votre équipe."
+          actionLabel="Nouvel Employé"
+          (actionClicked)="openCreatePanel()">
+        </app-empty-state>
+      } @else {
+        <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b [&_td]:py-4 [&_td]:px-3">
+        <thead>
+          <tr>
+            <th>Employé</th>
+            <th>Contact</th>
+            <th>Rôle</th>
+            <th>Boutique</th>
+            <th class="text-right pr-6">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (store.isLoading() && !store.usersPage()) {
+            <tr><td colspan="5" class="py-8 text-center text-gray-500"><lucide-icon name="loader-circle" class="h-6 w-6 animate-spin mx-auto"></lucide-icon></td></tr>
+          } @else {
+            @for (u of store.usersPage()?.content; track u.id) {
+              <tr class="hover:bg-gray-50" [class.opacity-50]="!u.active">
+                <td>
+                  <div class="flex items-center gap-3">
+                    <div class="h-10 w-10 rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold">
+                      {{ u.firstName.charAt(0) }}{{ u.lastName.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="font-bold text-gray-900">{{ u.firstName }} {{ u.lastName }}</p>
+                      @if (!u.active) { <span class="text-[10px] text-fc-red font-bold">DÉSACTIVÉ</span> }
+                    </div>
+                  </div>
+                </td>
+                <td class="text-gray-600">{{ u.phone }}</td>
+                <td>
+                  @if (u.role === 'SUPER_ADMIN') { <span class="px-2 py-1 bg-red-100 text-red-800 text-xs font-bold rounded-md">Super Admin</span> }
+                  @else if (u.role === 'PATRON') { <span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-bold rounded-md">Patron</span> }
+                  @else if (u.role === 'CAISSIERE') { <span class="px-2 py-1 bg-fc-green-light text-fc-green text-xs font-bold rounded-md">Caissière</span> }
+                  @else { <span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-bold rounded-md">Enregistreur</span> }
+                </td>
+                <td class="text-gray-600 text-sm">
+                  {{ u.poissonnerieName || 'Toutes (Global)' }}
+                </td>
+                <td class="text-right pr-6">
+                  <div class="flex items-center justify-end gap-2">
+                    
+                   <!-- SÉCURITÉ : On cache les boutons si c'est l'utilisateur connecté LUI-MÊME, 
+                      OU si c'est un SUPER_ADMIN (sauf si on est soi-même SUPER_ADMIN) -->
+                  @if (u.id !== authStore.user()?.id && (u.role !== 'SUPER_ADMIN' || authStore.isSuperAdmin())) {
+                    
+                    <button (click)="openEditPanel(u)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-md transition-colors" title="Modifier">
+                      <lucide-icon name="pencil" class="h-3.5 w-3.5"></lucide-icon> Modifier
+                    </button>
+                    
+                    <button (click)="openResetModal(u)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-yellow-dark bg-fc-yellow-light hover:bg-fc-yellow hover:text-white rounded-md transition-colors" title="Réinitialiser MDP">
+                      <lucide-icon name="lock" class="h-3.5 w-3.5"></lucide-icon> Réinitialiser
+                    </button>
+                    
+                    @if (u.active) {
+                      <button (click)="confirmDelete(u)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-red bg-fc-red-light hover:bg-fc-red hover:text-white rounded-md transition-colors" title="Désactiver">
+                        <lucide-icon name="trash-2" class="h-3.5 w-3.5"></lucide-icon> Désactiver
+                      </button>
+                    } @else {
+                      <button (click)="reactivateUser(u.id)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md transition-colors" title="Réactiver">
+                        <lucide-icon name="circle-check" class="h-3.5 w-3.5"></lucide-icon> Réactiver
+                      </button>
+                    }
+                  }
+
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    }
+    </div>
+    
+    <!-- Pagination -->
+    <div class="flex items-center justify-between p-4 border-t border-gray-200">
+      <p class="text-sm text-gray-500">
+        Page {{ (store.usersPage()?.page?.number ?? store.usersPage()?.number ?? 0) + 1 }} sur {{ store.usersPage()?.page?.totalPages ?? store.usersPage()?.totalPages ?? 1 }}
+      </p>
+      <div class="flex gap-2">
+        <button (click)="onPageChange((store.usersPage()?.number || 0) - 1)" [disabled]="store.usersPage()?.first" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"><lucide-icon name="chevron-left" class="h-4 w-4"></lucide-icon></button>
+        <button (click)="onPageChange((store.usersPage()?.number || 0) + 1)" [disabled]="store.usersPage()?.last" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50"><lucide-icon name="chevron-right" class="h-4 w-4"></lucide-icon></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-over Form -->
+<app-slide-over-panel [isOpen]="isSlideOverOpen()" [title]="userToEdit() ? 'Modifier l\'employé' : 'Nouvel Employé'" (closed)="isSlideOverOpen.set(false)">
+  <app-equipe-form 
+    [userToEdit]="userToEdit()" 
+    [poissonneries]="poissonnerieStore.poissonneriesPage()?.content || []"
+    [isLoading]="store.isLoading()" 
+    (cancel)="isSlideOverOpen.set(false)" 
+    (save)="onSaveUser($event)">
+  </app-equipe-form>
+</app-slide-over-panel>
+
+<!-- Confirm Delete -->
+<app-confirm-dialog [isOpen]="isConfirmOpen()" title="Désactiver l'employé" [message]="'Voulez-vous vraiment désactiver ' + userToDelete()?.firstName + ' ? Il ne pourra plus se connecter.'" confirmText="Désactiver" (cancelled)="isConfirmOpen.set(false)" (confirmed)="executeDelete()"></app-confirm-dialog>
+
+<!-- Modal Reset Password -->
+<app-modal [isOpen]="isResetModalOpen()" title="Réinitialiser le mot de passe" (closed)="isResetModalOpen.set(false)">
+  <div class="flex flex-col gap-4">
+    <div class="p-3 bg-yellow-50 text-yellow-800 rounded-lg text-sm">
+      Vous allez définir un nouveau mot de passe pour <strong>{{ userToReset()?.firstName }} {{ userToReset()?.lastName }}</strong>.
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Nouveau mot de passe</label>
+      <input type="text" [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)" placeholder="Minimum 6 caractères" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+    </div>
+    <div class="flex justify-end gap-3 mt-4">
+      <button (click)="isResetModalOpen.set(false)" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Annuler</button>
+      <button (click)="executeResetPassword()" [disabled]="newPassword().length < 6 || store.isLoading()" class="px-4 py-2 text-sm font-medium text-white bg-fc-yellow-dark hover:bg-yellow-600 rounded-lg disabled:opacity-50 flex items-center gap-2">
+        @if (store.isLoading()) { <lucide-icon name="loader-circle" class="h-4 w-4 animate-spin"></lucide-icon> }
+        Réinitialiser
+      </button>
+    </div>
+  </div>
+</app-modal>

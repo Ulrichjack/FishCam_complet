@@ -1,0 +1,149 @@
+<div class="flex flex-col gap-6">
+  <!-- Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900">Produits</h1>
+      <p class="text-sm text-gray-500 mt-1">Gérez le catalogue des produits vendus en boutique.</p>
+    </div>
+    <button (click)="openCreatePanel()" class="inline-flex items-center justify-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium transition-colors shadow-sm">
+      <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+      Nouveau Produit
+    </button>
+  </div>
+
+  <!-- Table Card -->
+  <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    
+    <!-- Search Bar & Filters -->
+    <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row gap-4 justify-between">
+      <!-- Search -->
+      <div class="relative w-full max-w-md">
+        <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-icon>
+        <input type="text" (input)="onSearch($event)" placeholder="Rechercher un produit..." 
+               class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
+      </div>
+
+      <!-- Filtre Actif/Inactif -->
+      <div class="flex gap-3 w-full sm:w-auto">
+        <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)" 
+                class="w-full sm:w-auto px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm text-gray-700 bg-white">
+          <option value="ALL">Tous les statuts</option>
+          <option value="ACTIVE">Actifs uniquement</option>
+          <option value="INACTIVE">Inactifs uniquement</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="block custom-scrollbar w-full max-w-full overflow-x-auto">
+      <table class="min-w-full border-collapse [&_thead]:bg-gray-100 [&_th]:text-start [&_th]:text-gray-500 [&_th]:tracking-wider [&_th]:uppercase [&_th]:font-semibold [&_th]:text-xs [&_th]:p-3 [&_tbody_tr]:border-b last:[&_tbody_tr]:border-b-0 [&_tbody_tr]:border-gray-200 hover:[&_tbody_tr]:bg-gray-50 [&_td]:py-4 [&_td]:px-3">
+        <thead>
+          <tr>
+            <th>Nom du Produit</th>
+            <th>Unité</th>
+            <th>Poids par Carton</th>
+            <th>Statut</th> <!-- NOUVELLE COLONNE -->
+            <th class="text-right pr-6">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (store.isLoading() && store.produitsPage()?.content?.length === 0) {
+            <tr>
+              <td colspan="5" class="py-8 text-center text-gray-500">
+                <lucide-icon name="loader-circle" class="h-6 w-6 animate-spin mx-auto mb-2"></lucide-icon>
+                Chargement...
+              </td>
+            </tr>
+          } @else {
+            <!-- ON BOUCLE SUR filteredProduits() -->
+            @for (produit of filteredProduits(); track produit.id) {
+              <tr class="group transition-colors">
+                <td class="font-medium text-gray-900">{{ produit.nom }}</td>
+                <td class="text-gray-600">{{ produit.unite }}</td>
+                <td class="text-gray-600">{{ produit.poidsParCarton }} kg</td>
+                
+                <!-- BADGE STATUT -->
+                <td>
+                  @if (produit.actif) {
+                    <span class="inline-flex px-2 py-0.5 bg-fc-green-light text-fc-green text-xs font-bold rounded-full">Actif</span>
+                  } @else {
+                    <span class="inline-flex px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-full">Inactif</span>
+                  }
+                </td>
+
+                <!-- ACTIONS -->
+                <td class="text-right pr-6">
+                  <div class="flex items-center justify-end gap-2">
+                    @if (produit.actif) {
+                      <button (click)="openEditPanel(produit)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-600 hover:text-white rounded-md transition-colors">
+                        <lucide-icon name="pencil" class="h-3.5 w-3.5"></lucide-icon> Modifier
+                      </button>
+                      <button (click)="confirmDelete(produit)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-red bg-fc-red-light hover:bg-fc-red hover:text-white rounded-md transition-colors">
+                        <lucide-icon name="trash-2" class="h-3.5 w-3.5"></lucide-icon> Désactiver
+                      </button>
+                    } @else {
+                      <button (click)="reactivateProduit(produit.id)" class="flex items-center gap-1.5 px-2 py-1.5 text-xs font-medium text-fc-green bg-fc-green-light hover:bg-fc-green hover:text-white rounded-md transition-colors">
+                        <lucide-icon name="circle-check" class="h-3.5 w-3.5"></lucide-icon> Réactiver
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="py-12 text-center text-gray-500">
+                  <lucide-icon name="package" class="h-8 w-8 mx-auto mb-3 text-gray-300"></lucide-icon>
+                  <p class="text-base font-medium text-gray-900">Aucun produit trouvé</p>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between p-4 border-t border-gray-200">
+      <p class="text-sm text-gray-500">
+        Page {{ (store.produitsPage()?.page?.number ?? store.produitsPage()?.number ?? 0) + 1 }} sur {{ store.produitsPage()?.page?.totalPages ?? store.produitsPage()?.totalPages ?? 1 }}
+      </p>
+      <div class="flex gap-2">
+        <button (click)="previousPage()" [disabled]="store.produitsPage()?.first" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+          <lucide-icon name="chevron-left" class="h-4 w-4"></lucide-icon>
+        </button>
+        <button (click)="nextPage()" [disabled]="store.produitsPage()?.last" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50">
+          <lucide-icon name="chevron-right" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Slide-over Panel -->
+<app-slide-over-panel
+  [isOpen]="isSlideOverOpen()"
+  [title]="produitToEdit() ? 'Modifier le produit' : 'Nouveau Produit'"
+  (closed)="isSlideOverOpen.set(false)">
+  
+  @if (store.error()) {
+    <div class="mb-4 rounded-md bg-fc-red-light p-4 text-sm text-fc-red font-medium">
+      {{ store.error() }}
+    </div>
+  }
+
+  <app-produit-form
+    [produitToEdit]="produitToEdit()"
+    [isLoading]="store.isLoading()"
+    (cancel)="isSlideOverOpen.set(false)"
+    (save)="onSaveProduit($event)">
+  </app-produit-form>
+</app-slide-over-panel>
+
+<!-- Confirm Dialog -->
+<app-confirm-dialog
+  [isOpen]="isConfirmOpen()"
+  title="Désactiver le produit"
+  [message]="'Êtes-vous sûr de vouloir désactiver le produit ' + produitToDelete()?.nom + ' ?'"
+  confirmText="Désactiver"
+  (cancelled)="isConfirmOpen.set(false)"
+  (confirmed)="executeDelete()">
+</app-confirm-dialog>

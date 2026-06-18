@@ -1,0 +1,73 @@
+<!-- ─── src/app/shared/components/ligne-form/ligne-form.component.html ───────── -->
+<form [formGroup]="ligneForm" (ngSubmit)="onSubmit()" class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-4">
+  
+  <!-- Ligne 1 : Produit -->
+  <div>
+    <label class="block text-sm font-medium text-gray-700 mb-1">Produit *</label>
+    <app-product-autocomplete 
+      (productSelected)="onProductSelected($event)">
+    </app-product-autocomplete>
+  </div>
+
+  <!-- Ligne 2 : Quantité et Poids -->
+  <div class="grid grid-cols-2 gap-4">
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Quantité (Cartons) *</label>
+      <input type="number" formControlName="quantiteCartons" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+    </div>
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Poids total (Kg) *</label>
+      <input type="number" step="0.1" formControlName="poidsKg" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+    </div>
+  </div>
+
+  <!-- Ligne 3 : Prix Achat et Prix Vente -->
+  <div class="grid grid-cols-2 gap-4">
+    <div class="relative">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Prix Achat / Carton *</label>
+      <input type="number" formControlName="prixUnitaireCarton" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+      
+      @if (isLoadingPrix()) {
+        <lucide-icon name="loader-circle" class="absolute right-3 top-9 h-4 w-4 text-fc-green animate-spin"></lucide-icon>
+      }
+
+      <!-- THE MISSING BADGE IS HERE -->
+      @if (dernierPrix(); as dp) {
+        <div class="mt-1 text-xs font-medium flex items-center gap-1">
+          @if (dp.fluctuation === 'HAUSSE') {
+            <span class="text-fc-red flex items-center"><lucide-icon name="trending-up" class="h-3 w-3 mr-1"></lucide-icon> Hausse (+{{ dp.difference }} F)</span>
+          } @else if (dp.fluctuation === 'BAISSE') {
+            <span class="text-fc-green flex items-center"><lucide-icon name="trending-down" class="h-3 w-3 mr-1"></lucide-icon> Baisse ({{ dp.difference }} F)</span>
+          } @else if (dp.fluctuation === 'STABLE') {
+            <span class="text-gray-500 flex items-center"><lucide-icon name="arrow-right" class="h-3 w-3 mr-1"></lucide-icon> Stable</span>
+          } @else {
+            <span class="text-fc-yellow-dark flex items-center"><lucide-icon name="plus" class="h-3 w-3 mr-1"></lucide-icon> Nouveau produit</span>
+          }
+        </div>
+      }
+    </div>
+    
+    <div class="relative">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Prix Vente / Kg *</label>
+      <input type="number" formControlName="prixVenteKilo" class="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none">
+      @if (isLoadingPrix()) {
+        <lucide-icon name="loader-circle" class="absolute right-3 top-9 h-4 w-4 text-fc-green animate-spin"></lucide-icon>
+      }
+    </div>
+  </div>
+
+  <!-- Total Calculé (UI Only) -->
+  <div class="flex items-center justify-between pt-2 border-t border-gray-200">
+    <span class="text-sm text-gray-500">Montant total de la ligne :</span>
+    <span class="font-bold text-gray-900">{{ montantCalcule() | currencyFcfa }} </span>
+  </div>
+
+  <!-- Submit Button -->
+  <button type="submit" 
+          [disabled]="ligneForm.invalid"
+          class="w-full flex items-center justify-center gap-2 bg-fc-green hover:bg-fc-green-dark text-white px-4 py-2.5 rounded-lg font-medium transition-colors disabled:opacity-50">
+    <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+    Ajouter la ligne
+  </button>
+
+</form>
