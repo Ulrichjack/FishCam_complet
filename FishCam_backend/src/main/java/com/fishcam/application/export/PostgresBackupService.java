@@ -21,7 +21,16 @@ public class PostgresBackupService {
     private String dbUrl;
 
     public File generateSqlBackup() throws Exception {
+        // Exemple dbUrl : jdbc:postgresql://fishcam-db:5432/fishcam_db
+        
+        // 1. Extraire le nom de la base de données (ce qu'il y a après le dernier /)
         String dbName = dbUrl.substring(dbUrl.lastIndexOf("/") + 1);
+        
+        // 2. Extraire l'hôte (host)
+        // On enlève "jdbc:postgresql://"
+        String cleanUrl = dbUrl.replace("jdbc:postgresql://", "");
+        // On prend ce qu'il y a avant les deux-points du port (ex: fishcam-db)
+        String dbHost = cleanUrl.substring(0, cleanUrl.indexOf(":"));
 
         // Créer le dossier s'il n'existe pas
         File backupDir = new File("backups");
@@ -32,8 +41,10 @@ public class PostgresBackupService {
         // Nom du fichier : fishcam_backup_2026-06-15.sql
         String filename = "backups/fishcam_backup_" + LocalDate.now() + ".sql";
 
+        // NOUVEAU : On ajoute "-h" et dbHost
         ProcessBuilder pb = new ProcessBuilder(
                 "pg_dump",
+                "-h", dbHost,
                 "-U", dbUsername,
                 "-f", filename,
                 dbName
