@@ -28,7 +28,7 @@ public class AdminController {
     private final PostgresBackupService postgresBackupService;
     private final DataScienceExportService dataScienceExportService;
     private final CloudflareR2StorageService cloudflareR2StorageService;
-    private final MinioStorageService minioStorageService;
+   // private final MinioStorageService minioStorageService;
     private final BackupStatusService backupStatusService;
     private final BackupRecordRepository backupRecordRepository;
 
@@ -47,8 +47,13 @@ public class AdminController {
             cloudflareR2StorageService.uploadBackup(csvFile);
 
             // 4. Envoyer sur MinIO
-            minioStorageService.uploadBackup(sqlFile);
-            minioStorageService.uploadBackup(csvFile);
+            // try {
+            //     minioStorageService.uploadBackup(sqlFile);
+            //     minioStorageService.uploadBackup(csvFile);
+            //     log.info("🐳 Sauvegarde réussie sur MinIO local !");
+            // } catch (Exception e) {
+            //     log.warn("⚠️ MinIO local n'est pas démarré ou est indisponible. Sauvegarde ignorée pour ce stockage. Erreur: {}", e.getMessage());
+            // }
 
             // 5. Enregistrer le succès en base de données
             BackupRecord record = new BackupRecord();
