@@ -55,16 +55,10 @@ public class ProduitService {
         Page<Produit> produitPage = produitRepository.findAll(pageable);
 
         return produitPage.map(produit -> {
-            ProduitAvecPrixResponse response = new ProduitAvecPrixResponse();
-            response.setId(produit.getId());
-            response.setNom(produit.getNom());
-            response.setUnite(produit.getUnite());
-            response.setPoidsParCarton(produit.getPoidsParCarton());
-            response.setActif(produit.getActif());
-            response.setCreatedAt(produit.getCreatedAt());
-            response.setUpdatedAt(produit.getUpdatedAt());
+            // 1. Le Mapper fait le travail ennuyeux
+            ProduitAvecPrixResponse response = produitMapper.toResponseAvecPrix(produit);
 
-            // Chercher le dernier prix pour cette poissonnerie
+            // 2. Le Service fait le travail intelligent (Base de données)
             List<LigneAchat> dernieresLignes = ligneAchatRepository
                     .findLatestPricesByProduitAndPoissonnerie(produit.getId(), poissonnerieId, PageRequest.of(0, 1));
 
@@ -77,7 +71,6 @@ public class ProduitService {
             return response;
         });
     }
-
     public List<ProduitResponse> searchProduits(String q) {
         if (q == null || q.trim().isEmpty()) {
             return List.of(); // Ou renvoyer la première page, selon ton choix

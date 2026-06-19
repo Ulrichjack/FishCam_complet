@@ -12,7 +12,12 @@ import { CurrencyFcfaPipe } from '../../pipes/currency-fcfa.pipe';
 @Component({
   selector: 'app-ligne-form',
   standalone: true,
-  imports: [ReactiveFormsModule, ProductAutocompleteComponent,  LucideAngularModule, CurrencyFcfaPipe],
+  imports: [
+    ReactiveFormsModule,
+    ProductAutocompleteComponent,
+    LucideAngularModule,
+    CurrencyFcfaPipe
+  ],
   templateUrl: './ligne-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
@@ -29,6 +34,9 @@ export class LigneFormComponent {
   isLoadingPrix = signal<boolean>(false);
   dernierPrix = signal<DernierPrixResponse | null>(null);
 
+  // NOUVEAU : On stocke le poids d'un seul carton en mémoire
+  poidsUnitaireCarton = signal<number>(0);
+
   ligneForm: FormGroup = this.fb.group({
     produitId: [null, Validators.required],
     quantiteCartons: [1, [Validators.required, Validators.min(1)]],
@@ -38,14 +46,19 @@ export class LigneFormComponent {
   });
 
   constructor() {
-    
+    // Écoute les changements globaux pour le montant total
     this.ligneForm.valueChanges.subscribe(values => {
-      const quantite = values.quantiteCartons;
-      const prix = values.prixUnitaireCarton;
-      if(quantite && prix) {
-        this.montantCalcule.set(quantite * prix);
-      } else {
-        this.montantCalcule.set(0);
+      const quantite = values.quantiteCartons || 0;
+      const prix = values.prixUnitaireCarton || 0;
+      this.montantCalcule.set(quantite * prix);
+    });
+
+    // NOUVEAU : Écoute SPÉCIFIQUEMENT les changements de quantité pour recalculer le poids total
+    this.ligneForm.get('quantiteCartons')?.valueChanges.subscribe(qty => {
+      const unitWeight = this.poidsUnitaireCarton();
+      if (unitWeight > 0 && qty) {
+        // On met à jour le champ Poids Total sans déclencher une boucle infinie d'événements
+        this.ligneForm.patchValue({ poidsKg: qty * unitWeight }, { emitEvent: false });
       }
     });
   }
@@ -53,37 +66,48 @@ export class LigneFormComponent {
   async onProductSelected(produit: ProduitResponse) {
     this.ligneForm.patchValue({ produitId: produit.id });
     this.selectedProduitNom.set(produit.nom);
+
+    // NOUVEAU : On sauvegarde le poids d'un carton
+    this.poidsUnitaireCarton.set(produit.poidsParCarton);
+
     this.isLoadingPrix.set(true);
-    
+
     try {
       const response = await firstValueFrom(this.achatService.getDernierPrix(produit.id, this.poissonnerieId()));
-      const dernierPrix = response.data; // <-- Ne pas oublier le .data !
+      const dernierPrix = response.data;
       this.dernierPrix.set(dernierPrix);
-      this.ligneForm.patchValue({ 
-        prixUnitaireCarton: dernierPrix.montantCarton, // On utilise montantCarton à cause du DTO backend
+
+      const currentQty = this.ligneForm.value.quantiteCartons || 1;
+
+      this.ligneForm.patchValue({
+        prixUnitaireCarton: dernierPrix.montantCarton,
         prixVenteKilo: dernierPrix.prixVenteKilo,
-        poidsKg: dernierPrix.poidsParCarton // On auto-remplit aussi le poids !
+        // NOUVEAU : On calcule le poids total immédiatement
+        poidsKg: produit.poidsParCarton * currentQty
       });
-      
+
     } catch (error) {
-      console.error("Impossible de récupérer le dernier prix", error);
+      // Si le produit n'a jamais été acheté, on remplit au moins le poids
+      const currentQty = this.ligneForm.value.quantiteCartons || 1;
+      this.ligneForm.patchValue({
+        poidsKg: produit.poidsParCarton * currentQty
+      });
     } finally {
       this.isLoadingPrix.set(false);
     }
   }
 
   onSubmit() {
-    // DIRECTIVE: If form is valid, emit the value + selectedProduitNom, then reset the form (except produitId if you want)
-    // YOUR CODE HERE
     if(this.ligneForm.valid) {
       const formValue = this.ligneForm.value;
-      this.ligneAdded.emit({ 
-        ...formValue, 
-        produitNom: this.selectedProduitNom() 
+      this.ligneAdded.emit({
+        ...formValue,
+        produitNom: this.selectedProduitNom()
       });
-      this.ligneForm.reset({ quantiteCartons: 1 }); // Reset form but keep quantiteCartons at 1
+      this.ligneForm.reset({ quantiteCartons: 1 });
       this.selectedProduitNom.set('');
       this.montantCalcule.set(0);
+      this.poidsUnitaireCarton.set(0); // On réinitialise le poids unitaire
     }
   }
 }
