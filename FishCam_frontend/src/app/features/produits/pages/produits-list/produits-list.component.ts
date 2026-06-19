@@ -6,16 +6,18 @@ import { SlideOverPanelComponent } from '../../../../shared/components/slide-ove
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { ProduitFormComponent } from '../../components/produit-form/produit-form.component';
 import { FormsModule } from '@angular/forms'; // <-- TRÈS IMPORTANT POUR LE FILTRE
+import { CurrencyFcfaPipe } from '../../../../shared/pipes/currency-fcfa.pipe';
 
 @Component({
   selector: 'app-produits-list',
   standalone: true,
   imports: [
-    LucideAngularModule, 
-    SlideOverPanelComponent, 
-    ConfirmDialogComponent, 
+    LucideAngularModule,
+    SlideOverPanelComponent,
+    ConfirmDialogComponent,
     ProduitFormComponent,
-    FormsModule // <-- AJOUTÉ ICI
+    FormsModule,
+    CurrencyFcfaPipe
   ],
   templateUrl: './produits-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -24,7 +26,7 @@ export class ProduitsListComponent implements OnInit {
 
   private searchTimeout: any;
   readonly store = inject(ProduitStore);
-  
+
   readonly selectedStatus = signal<'ALL' | 'ACTIVE' | 'INACTIVE'>('ALL');
   readonly isSlideOverOpen = signal<boolean>(false);
   readonly isConfirmOpen = signal<boolean>(false);
@@ -35,10 +37,10 @@ export class ProduitsListComponent implements OnInit {
   readonly filteredProduits = computed(() => {
     const status = this.selectedStatus();
     const page = this.store.produitsPage();
-    
+
     // On extrait le tableau 'content'. S'il n'y a rien, on prend un tableau vide []
-    const all = page?.content || []; 
-    
+    const all = page?.content || [];
+
     if (status === 'ACTIVE') return all.filter(p => p.actif);
     if (status === 'INACTIVE') return all.filter(p => !p.actif);
     return all;
@@ -106,7 +108,7 @@ export class ProduitsListComponent implements OnInit {
     }, 500);
   }
 
-  async reactivateProduit(id: number) { 
+  async reactivateProduit(id: number) {
     try {
       await this.store.reactivateProduit(id);
     } catch (error) {

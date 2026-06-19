@@ -19,5 +19,5 @@
 ## 3. Test de Résilience (Coupure Réseau)
 - **Objectif :** Débrancher le câble réseau pendant une transaction.
 - **Résultat attendu :** Le frontend affiche une erreur propre, la base de données n'est pas corrompue.
-- **Statut :** 🔲 À faire
-- **Observations :** ...
+- **Statut :** ✅ Validé
+- **Observations :** Avant la correction, l'interface restait bloquée à l'infini. Après l'ajout d'un `timeout(10000)` dans l'intercepteur HTTP d'Angular, l'application coupe la requête au bout de 10 secondes et affiche un Toast d'erreur clair. La transaction n'est pas enregistrée en base.

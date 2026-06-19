@@ -13,19 +13,19 @@
 
   <!-- Table Card -->
   <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-    
+
     <!-- Search Bar & Filters -->
     <div class="p-4 border-b border-gray-200 bg-gray-50/50 flex flex-col sm:flex-row gap-4 justify-between">
       <!-- Search -->
       <div class="relative w-full max-w-md">
         <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400"></lucide-icon>
-        <input type="text" (input)="onSearch($event)" placeholder="Rechercher un produit..." 
+        <input type="text" (input)="onSearch($event)" placeholder="Rechercher un produit..."
                class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm">
       </div>
 
       <!-- Filtre Actif/Inactif -->
       <div class="flex gap-3 w-full sm:w-auto">
-        <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)" 
+        <select [ngModel]="selectedStatus()" (ngModelChange)="onStatusChange($event)"
                 class="w-full sm:w-auto px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-fc-green outline-none text-sm text-gray-700 bg-white">
           <option value="ALL">Tous les statuts</option>
           <option value="ACTIVE">Actifs uniquement</option>
@@ -41,6 +41,8 @@
             <th>Nom du Produit</th>
             <th>Unité</th>
             <th>Poids par Carton</th>
+            <th>Dernier Prix Achat</th>
+            <th>Dernier Prix Vente</th>
             <th>Statut</th> <!-- NOUVELLE COLONNE -->
             <th class="text-right pr-6">Actions</th>
           </tr>
@@ -60,7 +62,21 @@
                 <td class="font-medium text-gray-900">{{ produit.nom }}</td>
                 <td class="text-gray-600">{{ produit.unite }}</td>
                 <td class="text-gray-600">{{ produit.poidsParCarton }} kg</td>
-                
+                <td class="font-semibold text-gray-900">
+                  @if (produit.dernierMontantCarton) {
+                    {{ produit.dernierMontantCarton | currencyFcfa }}
+                  } @else {
+                    <span class="text-gray-400 text-xs italic">-</span>
+                  }
+                </td>
+
+                <td class="font-semibold text-fc-green">
+                  @if (produit.dernierPrixVenteKilo) {
+                    {{ produit.dernierPrixVenteKilo | currencyFcfa }}/kg
+                  } @else {
+                    <span class="text-gray-400 text-xs italic">-</span>
+                  }
+                </td>
                 <!-- BADGE STATUT -->
                 <td>
                   @if (produit.actif) {
@@ -123,7 +139,7 @@
   [isOpen]="isSlideOverOpen()"
   [title]="produitToEdit() ? 'Modifier le produit' : 'Nouveau Produit'"
   (closed)="isSlideOverOpen.set(false)">
-  
+
   @if (store.error()) {
     <div class="mb-4 rounded-md bg-fc-red-light p-4 text-sm text-fc-red font-medium">
       {{ store.error() }}

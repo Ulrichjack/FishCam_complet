@@ -6,11 +6,14 @@ import { ProduitResponse } from "../../../core/models/produit.model";
 import { PageResponse } from "../../../core/models/api-response.model";
 import { CreateProduitRequest, UpdateProduitRequest } from "../models/produit-request.model";
 import { ToastService } from "../../../core/services/toast.service";
+import { AuthStore } from "../../../core/stores/auth.store";
 
 @Injectable({ providedIn: 'root' })
 export class ProduitStore {
   private readonly produitService = inject(ProduitService);
   private readonly toastService = inject(ToastService);
+  private readonly authStore = inject(AuthStore);
+
 
   // --- STATE SIGNALS ---
   private readonly _produitsPage = signal<PageResponse<ProduitResponse> | null>(null);
@@ -23,28 +26,22 @@ export class ProduitStore {
   readonly error = this._error.asReadonly();
 
   // --- ACTIONS ---
-
-  // DIRECTIVE: Implémente loadProduits(page: number = 0)
-  // Gère isLoading, error, et appelle le service avec firstValueFrom
-  // Met à jour _produitsPage
-  // YOUR CODE HERE
     async loadProduits(page: number = 0) {
-      this._isLoading.set(true);
-      this._error.set(null);
-      try {
-        const response = await firstValueFrom(this.produitService.getProduits(page));
-        this._produitsPage.set(response.data);
-      } catch (err) {
-        this._error.set('Erreur lors du chargement des produits');
-      } finally {
-        this._isLoading.set(false);
-      }
-    }
+    const poissonnerieId = this.authStore.activePoissonnerieId();
+    if (!poissonnerieId) return;
 
-  // DIRECTIVE: Implémente createProduit(data: CreateProduitRequest)
-  // Gère isLoading, error, appelle le service.
-  // Si succès, recharge la page 0 (this.loadProduits(0))
-  // YOUR CODE HERE
+    this._isLoading.set(true);
+    this._error.set(null);
+    try {
+      const response = await firstValueFrom(this.produitService.getProduits(poissonnerieId, page));
+      this._produitsPage.set(response.data);
+    } catch (err) {
+      this._error.set('Erreur lors du chargement des produits');
+    } finally {
+      this._isLoading.set(false);
+    }
+  }
+
   async createProduit(data: CreateProduitRequest) {
     this._isLoading.set(true);
     this._error.set(null);
@@ -59,10 +56,7 @@ export class ProduitStore {
     }
   }
 
-  // DIRECTIVE: Implémente updateProduit(id: number, data: UpdateProduitRequest)
-  // Gère isLoading, error, appelle le service.
-  // Si succès, recharge la page courante (this.loadProduits(this._produitsPage()?.number || 0))
-  // YOUR CODE HERE
+
   async updateProduit(id: number, data: UpdateProduitRequest) {
     this._isLoading.set(true);
     this._error.set(null);
@@ -77,10 +71,7 @@ export class ProduitStore {
     }
   }
 
-  // DIRECTIVE: Implémente deleteProduit(id: number)
-  // Gère isLoading, error, appelle le service.
-  // Si succès, recharge la page courante
-  // YOUR CODE HERE
+
   async deleteProduit(id: number) {
     this._isLoading.set(true);
     this._error.set(null);
@@ -126,12 +117,12 @@ export class ProduitStore {
     try {
       await firstValueFrom(this.produitService.reactivateProduit(id));
       this.loadProduits(this._produitsPage()?.number || 0);
-      this.toastService.success('Produit réactivé avec succès !'); 
+      this.toastService.success('Produit réactivé avec succès !');
     } catch (err) {
       this._error.set('Erreur lors de la réactivation du produit');
     } finally {
       this._isLoading.set(false);
-    } 
+    }
   }
 
 }
