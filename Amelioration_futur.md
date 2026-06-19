@@ -1,0 +1,2 @@
+Comme pour le prix de vente, on ne modifiera pas la base de données. On ajoutera simplement une colonne "Dernier Prix d'Achat" dans le tableau de la page "Produits" (/produits).
+Le backend calculera ce prix à la volée en allant chercher la dernière ligne de facture de ce produit. Ainsi, la caissière verra le prix d'achat actuel directement dans la liste des produits ! On note ça dans les améliorations futures.
