@@ -52,9 +52,10 @@ import {
   CloudUpload,
   Wifi,
   CircleX,
-  Archive
+  Archive,
+  WifiOff,
 
- 
+
 
 } from 'lucide-angular';
 
@@ -111,7 +112,8 @@ const icons = {
   CloudUpload,
   Wifi,
   CircleX,
-  Archive
+  Archive,
+  WifiOff,
 
 };
 
