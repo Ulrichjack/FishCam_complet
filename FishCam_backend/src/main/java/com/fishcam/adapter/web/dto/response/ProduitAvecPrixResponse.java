@@ -21,6 +21,7 @@ public class ProduitAvecPrixResponse {
     private LocalDateTime updatedAt;
 
     // NOUVEAUX CHAMPS
-    private BigDecimal dernierMontantCarton;
+   // private BigDecimal dernierMontantCarton;
     private BigDecimal dernierPrixVenteKilo;
+    private BigDecimal prixUnitaireCarton;
 }

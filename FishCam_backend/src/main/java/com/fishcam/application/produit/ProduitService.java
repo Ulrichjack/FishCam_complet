@@ -64,7 +64,7 @@ public class ProduitService {
 
             if (!dernieresLignes.isEmpty()) {
                 LigneAchat derniereLigne = dernieresLignes.get(0);
-                response.setDernierMontantCarton(derniereLigne.getMontantCarton());
+                response.setPrixUnitaireCarton(derniereLigne.getPrixUnitaireCarton());
                 response.setDernierPrixVenteKilo(derniereLigne.getPrixVenteKilo());
             }
 

@@ -6,11 +6,18 @@ import { ModalComponent } from '../../shared/components/modal/modal.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../core/auth/auth.service';
 import { firstValueFrom } from 'rxjs';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [LucideAngularModule, RouterLink, RouterLinkActive, ModalComponent, ReactiveFormsModule],
+  imports: [
+    LucideAngularModule,
+     RouterLink, 
+     RouterLinkActive, 
+     ModalComponent, 
+     ReactiveFormsModule
+    ],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +28,7 @@ export class SidebarComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  private readonly toastService = inject(ToastService);
 
   isAdministrationMenuOpen = signal(false);
   isGestionMenuOpen = signal(false);
@@ -78,7 +86,7 @@ export class SidebarComponent {
         nouveauMotDePasse: vals.nouveauMotDePasse
       }));
       this.isPasswordModalOpen.set(false);
-      alert("Mot de passe modifié avec succès !");
+      this.toastService.success("Mot de passe modifié avec succès !");
     } catch (error: any) {
       this.pwdError.set(error.error?.message || "Erreur lors de la modification.");
     } finally {
