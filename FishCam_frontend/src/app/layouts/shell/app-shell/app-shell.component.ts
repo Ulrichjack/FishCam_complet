@@ -26,6 +26,9 @@ export class AppShellComponent implements OnInit {
   readonly isSidebarOpen = signal(false);
   readonly isOnline = signal<boolean>(navigator.onLine);
 
+  // NOUVEAU : Variable pour éviter la boucle infinie
+  private lastAutoSyncAttempt = 0;
+
   openSidebar() { this.isSidebarOpen.set(true); }
   closeSidebar() { this.isSidebarOpen.set(false); }
 
@@ -36,27 +39,32 @@ export class AppShellComponent implements OnInit {
   onOffline() { this.isOnline.set(false); }
 
   ngOnInit() {
-    // MODIFIÉ : Tout le monde charge le statut des backups maintenant !
+    // Tout le monde charge le statut des backups au démarrage
     this.backupStore.loadStatus();
   }
 
   constructor() {
+    // Effet pour les notifications
     effect(() => {
       const userId = this.auth.user()?.id;
       if (!userId) return;
       this.notificationStore.refreshShell(userId);
     });
 
-    // Effet magique pour l'Auto-Sauvegarde
-   // NOUVEAU : Effet magique pour l'Auto-Sauvegarde !
+    // Effet magique pour l'Auto-Sauvegarde avec délai de 5 minutes
     effect(() => {
       const status = this.backupStore.status();
       const online = this.isOnline();
 
       if (status && (status.weeklyMissed || status.monthlyMissed) && online && !this.backupStore.isLoading()) {
-        console.log("🌐 Internet détecté et sauvegarde en retard : Lancement automatique !");
-        // On passe 'true' pour dire que c'est automatique
-        this.backupStore.syncCloud(true);
+        
+        const now = Date.now();
+        // On vérifie si ça fait plus de 5 minutes (300 000 ms) depuis la dernière tentative
+        if (now - this.lastAutoSyncAttempt > 300000) {
+          console.log("🌐 Tentative d'auto-sauvegarde...");
+          this.lastAutoSyncAttempt = now; // On enregistre l'heure de la tentative
+          this.backupStore.syncCloud(true); // true = mode silencieux
+        }
       }
     });
   }

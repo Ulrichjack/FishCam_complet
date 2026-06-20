@@ -13,6 +13,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     timeout(10000), // <-- NOUVEAU : Si pas de réponse après 10 secondes, on déclenche une erreur
     catchError((error: any) => {
+
+       if (req.url.includes('/backup/sync-cloud')) {
+        return throwError(() => error);
+      }
+      
       let message = 'Une erreur est survenue';
 
       // NOUVEAU : Gestion spécifique du Timeout

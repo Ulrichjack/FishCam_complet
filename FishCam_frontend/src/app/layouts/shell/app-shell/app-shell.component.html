@@ -22,11 +22,11 @@
       (mobileMenuClicked)="openSidebar()">
     </app-topbar>
 
-    <!-- NOUVEAU : BANNIÈRE GLOBALE DE SAUVEGARDE (Cliquable et pour tout le monde) -->
-    @if (backupStore.status()?.weeklyMissed && !isOnline()) {
+    <!-- On affiche la bannière SI on est en retard, PEU IMPORTE l'état du réseau -->
+    @if (backupStore.status()?.weeklyMissed) {
       <a routerLink="/backup" class="bg-fc-red text-white px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium shadow-md z-40 hover:bg-red-700 transition-colors cursor-pointer">
-        <lucide-icon name="wifi-off" class="h-4 w-4 shrink-0"></lucide-icon>
-        <span class="text-center">Sauvegarde Cloud en attente. Connectez le serveur à Internet. Cliquez ici pour voir les détails.</span>
+        <lucide-icon name="triangle-alert" class="h-4 w-4 shrink-0"></lucide-icon>
+        <span class="text-center">Sauvegarde Cloud en attente. Vérifiez la connexion Internet du serveur. Cliquez ici pour voir les détails.</span>
       </a>
     }
 
