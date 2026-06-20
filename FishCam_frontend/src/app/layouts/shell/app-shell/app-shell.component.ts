@@ -48,13 +48,15 @@ export class AppShellComponent implements OnInit {
     });
 
     // Effet magique pour l'Auto-Sauvegarde
+   // NOUVEAU : Effet magique pour l'Auto-Sauvegarde !
     effect(() => {
       const status = this.backupStore.status();
       const online = this.isOnline();
 
       if (status && (status.weeklyMissed || status.monthlyMissed) && online && !this.backupStore.isLoading()) {
         console.log("🌐 Internet détecté et sauvegarde en retard : Lancement automatique !");
-        this.backupStore.syncCloud();
+        // On passe 'true' pour dire que c'est automatique
+        this.backupStore.syncCloud(true);
       }
     });
   }

@@ -19,7 +19,7 @@ export class BackupStore {
   loadStatus() {
     this._isLoading.set(true);
     this._error.set(null);
-    
+
     firstValueFrom(this.backupService.getStatus())
       .then(response => {
         if (response.success) {
@@ -36,8 +36,8 @@ export class BackupStore {
       });
   }
 
-  // NOUVELLE MÉTHODE POUR LE CLOUD
-  async syncCloud() {
+ // NOUVELLE MÉTHODE POUR LE CLOUD (Modifiée)
+  async syncCloud(isAuto: boolean = false) {
     this._isLoading.set(true);
     this._error.set(null);
     try {
@@ -45,7 +45,13 @@ export class BackupStore {
       this.toastService.success(response.message);
       this.loadStatus(); // Recharge le statut pour enlever la bannière rouge
     } catch (error: any) {
-      this._error.set(error.error?.message || 'Erreur lors de la synchronisation');
+      // Si c'est l'utilisateur qui a cliqué, on affiche l'erreur
+      if (!isAuto) {
+        this._error.set(error.error?.message || 'Erreur lors de la synchronisation');
+      } else {
+        // Si c'est l'auto-sauvegarde, on log juste en silence
+        console.warn("Auto-sauvegarde échouée (probablement pas d'internet). On réessaiera plus tard.");
+      }
     } finally {
       this._isLoading.set(false);
     }
