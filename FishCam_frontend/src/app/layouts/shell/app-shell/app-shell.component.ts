@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, effect, signal, HostListener, OnInit } from '@angular/core';
 import { SidebarComponent } from "../../sidebar/sidebar.component";
-import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from "@angular/router";
 import { TopbarComponent } from '../../topbar/topbar.component';
 import { AuthStore } from '../../../core/stores/auth.store';
 import { NotificationStore } from '../../../features/notifications/stores/notification.store';
@@ -12,7 +12,13 @@ import { LucideAngularModule } from 'lucide-angular';
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [SidebarComponent, RouterOutlet, TopbarComponent, LucideAngularModule],
+  imports: [
+    SidebarComponent, 
+    RouterOutlet,
+    TopbarComponent, 
+    LucideAngularModule,
+    RouterLink
+  ],
   templateUrl: './app-shell.component.html',
   styleUrl: './app-shell.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush

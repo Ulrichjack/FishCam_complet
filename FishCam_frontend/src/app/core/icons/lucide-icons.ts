@@ -54,6 +54,7 @@ import {
   CircleX,
   Archive,
   WifiOff,
+  Play
 
 
 
@@ -114,6 +115,7 @@ const icons = {
   CircleX,
   Archive,
   WifiOff,
+  Play
 
 };
 

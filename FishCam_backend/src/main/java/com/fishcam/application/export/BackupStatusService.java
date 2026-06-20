@@ -22,7 +22,7 @@ public class BackupStatusService {
         var lastCloudSync = backupRecordRepository.findTopByTypeOrderByDateExecutionDesc(TypeBackup.CLOUD_WEEKLY);
 
         boolean isCloudSyncMissed = lastCloudSync.isEmpty() ||
-                lastCloudSync.get().getDateExecution().isBefore(LocalDateTime.now().minusMinutes(2));
+                lastCloudSync.get().getDateExecution().isBefore(LocalDateTime.now().minusDays(7));
 
         // 1. Récupérer l'historique depuis la BDD
         List<BackupRecord> recentBackups = backupRecordRepository.findTop10ByOrderByDateExecutionDesc();
