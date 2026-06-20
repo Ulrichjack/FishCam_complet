@@ -63,8 +63,8 @@
                 <td class="text-gray-600">{{ produit.unite }}</td>
                 <td class="text-gray-600">{{ produit.poidsParCarton }} kg</td>
                 <td class="font-semibold text-gray-900">
-                  @if (produit.dernierMontantCarton) {
-                    {{ produit.dernierMontantCarton | currencyFcfa }}
+                  @if (produit.prixUnitaireCarton) {
+                    {{ produit.prixUnitaireCarton | currencyFcfa }}
                   } @else {
                     <span class="text-gray-400 text-xs italic">-</span>
                   }
