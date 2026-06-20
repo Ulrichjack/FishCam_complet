@@ -22,6 +22,14 @@
       (mobileMenuClicked)="openSidebar()">
     </app-topbar>
 
+    <!-- NOUVEAU : BANNIÈRE GLOBALE DE SAUVEGARDE (Cliquable et pour tout le monde) -->
+    @if (backupStore.status()?.weeklyMissed && !isOnline()) {
+      <a routerLink="/backup" class="bg-fc-red text-white px-4 py-2.5 flex items-center justify-center gap-2 text-sm font-medium shadow-md z-40 hover:bg-red-700 transition-colors cursor-pointer">
+        <lucide-icon name="wifi-off" class="h-4 w-4 shrink-0"></lucide-icon>
+        <span class="text-center">Sauvegarde Cloud en attente. Connectez le serveur à Internet. Cliquez ici pour voir les détails.</span>
+      </a>
+    }
+
     <main class="flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6 lg:p-8">
       <router-outlet></router-outlet>
     </main>

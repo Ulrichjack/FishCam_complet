@@ -34,7 +34,7 @@ public class AdminController {
 
     @PostMapping("/backup/sync-cloud")
     @Operation(summary = "Pousser la sauvegarde et le CSV vers Cloudflare R2 et MinIO")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PATRON')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PATRON', 'CAISSIERE', 'ENREGISTREUR')")
     public ResponseEntity<ApiResponse<String>> syncToCloud() {
         try {
             // 1. Générer le SQL

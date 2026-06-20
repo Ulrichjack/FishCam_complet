@@ -20,7 +20,7 @@ public class BackupScheduler {
     private final BackupRecordRepository backupRecordRepository;
 
     // Tous les jours à 19h00 (Sauvegarde Locale uniquement)
-    @Scheduled(cron = "0 0 19 * * *")
+    @Scheduled(cron = "0 * * * * *")
     public void generateDailyLocalBackup() {
         log.info("⏰ Démarrage de la sauvegarde locale quotidienne...");
         try {
