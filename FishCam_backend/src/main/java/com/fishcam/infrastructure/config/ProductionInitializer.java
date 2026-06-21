@@ -8,6 +8,9 @@ import com.fishcam.domain.user.UserRepository;
 import com.fishcam.domain.user.UserScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
+
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +36,9 @@ public class ProductionInitializer implements CommandLineRunner {
             boutiqueCentrale.setAddress("La Petite mosquée");
             boutiqueCentrale.setPhone("676028800");
             boutiqueCentrale.setActive(true);
+            boutiqueCentrale.setPretActif(false); // NOUVEAU
+            boutiqueCentrale.setLoyer(BigDecimal.ZERO); // NOUVEAU
+            boutiqueCentrale.setFondDeCaisseDefaut(BigDecimal.valueOf(10000)); // NOUVEAU
             poissonnerieRepository.save(boutiqueCentrale);
 
             Poissonnerie boutique2 = new Poissonnerie();
@@ -40,6 +46,9 @@ public class ProductionInitializer implements CommandLineRunner {
             boutique2.setAddress("Adresse Boutique 2");
             boutique2.setPhone("677000002");
             boutique2.setActive(true);
+            boutique2.setPretActif(false); // NOUVEAU
+            boutique2.setLoyer(BigDecimal.ZERO); // NOUVEAU
+            boutique2.setFondDeCaisseDefaut(BigDecimal.valueOf(10000)); // NOUVEAU
             poissonnerieRepository.save(boutique2);
 
             Poissonnerie boutique3 = new Poissonnerie();
@@ -47,6 +56,9 @@ public class ProductionInitializer implements CommandLineRunner {
             boutique3.setAddress("Adresse Boutique 3");
             boutique3.setPhone("677000003");
             boutique3.setActive(true);
+            boutique3.setPretActif(false); // NOUVEAU
+            boutique3.setLoyer(BigDecimal.ZERO); // NOUVEAU
+            boutique3.setFondDeCaisseDefaut(BigDecimal.valueOf(10000)); // NOUVEAU
             poissonnerieRepository.save(boutique3);
 
             createProductionUsers(boutiqueCentrale);

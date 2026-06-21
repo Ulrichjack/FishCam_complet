@@ -20,7 +20,7 @@ import { CurrencyFcfaPipe } from '../../../../shared/pipes/currency-fcfa.pipe';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class BilansPageComponent implements OnInit {
-  
+
   readonly store = inject(BilanStore);
   readonly authStore = inject(AuthStore);
 
@@ -36,9 +36,9 @@ export class BilansPageComponent implements OnInit {
     { value: 9, label: 'Septembre' }, { value: 10, label: 'Octobre' },
     { value: 11, label: 'Novembre' }, { value: 12, label: 'Décembre' }
   ];
-  
+
   readonly anneesList = computed(() => {
-    const startYear = 20246; // On bloque à 2024 (l'année de création de l'entreprise par exemple)
+    const startYear = 2026; // On bloque à 2024 (l'année de création de l'entreprise par exemple)
     const currentYear = Math.max(new Date().getFullYear(), startYear); // Évite que currentYear soit inférieur à startYear
     const years = [];
     for (let y = currentYear; y >= startYear; y--) {
@@ -59,12 +59,12 @@ export class BilansPageComponent implements OnInit {
     const annee = Number(this.selectedAnnee());
 
     this.store.loadBilan(poissonnerieId, mois, annee);
-    
+
     // Si c'est un super admin, on charge aussi la comparaison globale
     if (this.authStore.isSuperAdmin() || this.authStore.isPatron()) {
       this.store.loadComparaison(mois, annee);
     }
-  
+
   }
 
   onFilterChange() {
