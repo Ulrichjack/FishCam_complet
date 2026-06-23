@@ -279,7 +279,7 @@ public class AchatJournalierService {
 
         LigneAchat lastPurchase = results.get(0);
         // 🟢 MODIFIÉ ICI
-        response.setMontantCarton(lastPurchase.getPrixUnitaireCarton());
+        response.setMontantCarton(lastPurchase.getMontantCarton());
         response.setPrixVenteKilo(lastPurchase.getPrixVenteKilo());
 
         if (results.size() == 1) {

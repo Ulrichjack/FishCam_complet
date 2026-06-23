@@ -174,7 +174,8 @@ public class ClotureJournaliereService {
         cloture.setMontantDettesJour(preparer.getMontantDettesJour());
         cloture.setMontantRembourseJour(preparer.getMontantRembourseJour());
         cloture.setNombreDettesJour(preparer.getNombreDettesJour());
-
+        cloture.setEcartVente(ecartVente);
+        
         ClotureJournaliere saved = clotureJournaliereRepository.save(cloture);
         ClotureJournaliereResponse response = clotureMapper.toResponse(saved);
         response.setEcartVente(ecartVente);
