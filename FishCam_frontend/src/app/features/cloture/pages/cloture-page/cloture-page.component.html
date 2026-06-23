@@ -62,27 +62,56 @@
         </div>
 
         <!-- CARTE ÉCART EN TEMPS RÉEL -->
+        <!-- CARTE ÉCART EN TEMPS RÉEL OU HISTORIQUE -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-center text-center">
           <p class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Écart de Caisse</p>
           
-          @if (ecart() === 0) {
-            <div class="text-fc-green flex items-center gap-2">
-              <lucide-icon name="circle-check" class="h-8 w-8"></lucide-icon>
-              <span class="text-3xl font-bold">Parfait</span>
-            </div>
-            <p class="text-sm text-gray-500 mt-2">La caisse correspond exactement aux ventes.</p>
-          } @else if (ecart() < 0) {
-            <div class="text-fc-red flex items-center gap-2">
-              <lucide-icon name="triangle-alert" class="h-8 w-8"></lucide-icon>
-              <span class="text-3xl font-bold">{{ ecart() | currencyFcfa }}</span>
-            </div>
-            <p class="text-sm text-fc-red mt-2">Manquant en caisse !</p>
+          @if (isAlreadyClosed()) {
+            <!-- SI DÉJÀ CLÔTURÉ : On cherche l'écart dans l'historique -->
+            @for (hist of store.historique(); track hist.id) {
+              @if (hist.date === selectedDate()) {
+                @if (hist.ecartVente === 0) {
+                  <div class="text-fc-green flex items-center gap-2">
+                    <lucide-icon name="circle-check" class="h-8 w-8"></lucide-icon>
+                    <span class="text-3xl font-bold">Parfait (0 FCFA)</span>
+                  </div>
+                  <p class="text-sm text-gray-500 mt-2">La caisse correspondait exactement aux ventes.</p>
+                } @else if (hist.ecartVente < 0) {
+                  <div class="text-fc-red flex items-center gap-2">
+                    <lucide-icon name="triangle-alert" class="h-8 w-8"></lucide-icon>
+                    <span class="text-3xl font-bold">{{ hist.ecartVente | currencyFcfa }}</span>
+                  </div>
+                  <p class="text-sm text-fc-red mt-2">Manquant enregistré ce jour-là.</p>
+                } @else {
+                  <div class="text-fc-green flex items-center gap-2">
+                    <lucide-icon name="trending-up" class="h-8 w-8"></lucide-icon>
+                    <span class="text-3xl font-bold">+{{ hist.ecartVente | currencyFcfa }}</span>
+                  </div>
+                  <p class="text-sm text-fc-green mt-2">Surplus enregistré ce jour-là.</p>
+                }
+              }
+            }
           } @else {
-            <div class="text-fc-green flex items-center gap-2">
-              <lucide-icon name="trending-up" class="h-8 w-8"></lucide-icon>
-              <span class="text-3xl font-bold">+{{ ecart() | currencyFcfa }}</span>
-            </div>
-            <p class="text-sm text-fc-green mt-2">Surplus en caisse.</p>
+            <!-- SI NON CLÔTURÉ : Calcul en temps réel (Ton code actuel) -->
+            @if (ecart() === 0) {
+              <div class="text-fc-green flex items-center gap-2">
+                <lucide-icon name="circle-check" class="h-8 w-8"></lucide-icon>
+                <span class="text-3xl font-bold">Parfait</span>
+              </div>
+              <p class="text-sm text-gray-500 mt-2">La caisse correspond exactement aux ventes.</p>
+            } @else if (ecart() < 0) {
+              <div class="text-fc-red flex items-center gap-2">
+                <lucide-icon name="triangle-alert" class="h-8 w-8"></lucide-icon>
+                <span class="text-3xl font-bold">{{ ecart() | currencyFcfa }}</span>
+              </div>
+              <p class="text-sm text-fc-red mt-2">Manquant en caisse !</p>
+            } @else {
+              <div class="text-fc-green flex items-center gap-2">
+                <lucide-icon name="trending-up" class="h-8 w-8"></lucide-icon>
+                <span class="text-3xl font-bold">+{{ ecart() | currencyFcfa }}</span>
+              </div>
+              <p class="text-sm text-fc-green mt-2">Surplus en caisse.</p>
+            }
           }
         </div>
       </div>

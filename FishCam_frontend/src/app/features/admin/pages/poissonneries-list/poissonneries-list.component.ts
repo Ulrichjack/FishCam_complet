@@ -55,9 +55,13 @@ export class PoissonneriesListComponent implements OnInit {
     this.selectedStatus.set(status as 'ALL' | 'ACTIVE' | 'INACTIVE');
   }
 
-  openCreatePanel(): void {
-    this.poissonnerieToEdit.set(null);
-    this.isSlideOverOpen.set(true);
+  openCreatePanel() {
+    // On force un changement d'état pour déclencher l'effect du formulaire
+    this.poissonnerieToEdit.set({ id: -1 } as any); // Hack temporaire pour forcer le changement
+    setTimeout(() => {
+      this.poissonnerieToEdit.set(null); // Le vrai reset
+      this.isSlideOverOpen.set(true);
+    }, 0);
   }
 
   openEditPanel(poissonnerie: PoissonnerieResponse): void {

@@ -64,13 +64,17 @@ export class CloturePageComponent implements OnInit {
   readonly ecart = computed(() => {
     const { argentCaisse, fondDeCaisse, transport, ration, autresFrais } = this.formValues();
     const preparation = this.store.preparation();
+    
     const totalVentePrevisible = preparation ? preparation.totalVentePrevisible : 0;
+    // 🟢 CORRECTION DU BUG : On récupère les dettes et remboursements
+    const dettes = preparation ? preparation.montantDettesJour : 0;
+    const remboursements = preparation ? preparation.montantRembourseJour : 0;
 
     // 1. Calculer le total des dépenses
     const totalDepenses = (transport || 0) + (ration || 0) + (autresFrais || 0);
     
-    // 2. Calculer combien d'argent il DEVRAIT y avoir dans le tiroir
-    const caisseTheorique = (fondDeCaisse || 0) + totalVentePrevisible - totalDepenses;
+    // 2. 🟢 CORRECTION DU BUG : Calculer combien d'argent il DEVRAIT y avoir dans le tiroir
+    const caisseTheorique = (fondDeCaisse || 0) + totalVentePrevisible - dettes + remboursements - totalDepenses;
 
     // 3. L'écart est la différence entre le Réel et le Théorique
     return (argentCaisse || 0) - caisseTheorique;

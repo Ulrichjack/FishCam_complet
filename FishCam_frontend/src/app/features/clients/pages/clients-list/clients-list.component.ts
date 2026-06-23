@@ -108,10 +108,13 @@ export class ClientsListComponent implements OnInit {
 
 
   openCreatePanel() {
-    this.clientToEdit.set(null); // Clear the form
-    this.isSlideOverOpen.set(true);
+    // On force un changement d'état pour déclencher l'effect du formulaire
+    this.clientToEdit.set({ id: -1 } as any); // Hack temporaire pour forcer le changement
+    setTimeout(() => {
+      this.clientToEdit.set(null); // Le vrai reset
+      this.isSlideOverOpen.set(true);
+    }, 0);
   }
-
 
   openEditPanel(client: ClientResponse) {
     this.clientToEdit.set(client); // Pass the client data to the form

@@ -31,14 +31,14 @@ import { ErrorStateComponent } from '../../../../shared/components/error-state/e
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EquipeListComponent implements OnInit {
-  
+
   readonly store = inject(EquipeStore);
   readonly poissonnerieStore = inject(PoissonnerieStore);
   readonly authStore = inject(AuthStore);
 
   readonly isSlideOverOpen = signal(false);
   readonly userToEdit = signal<UserResponse | null>(null);
-  
+
   readonly isConfirmOpen = signal(false);
   readonly userToDelete = signal<UserResponse | null>(null);
 
@@ -52,8 +52,12 @@ export class EquipeListComponent implements OnInit {
   }
 
   openCreatePanel() {
-    this.userToEdit.set(null);
-    this.isSlideOverOpen.set(true);
+    // On force un changement d'état pour déclencher l'effect du formulaire
+    this.userToEdit.set({ id: -1 } as any); // Hack temporaire pour forcer le changement
+    setTimeout(() => {
+      this.userToEdit.set(null); // Le vrai reset
+      this.isSlideOverOpen.set(true);
+    }, 0);
   }
 
   openEditPanel(user: UserResponse) {
@@ -101,7 +105,7 @@ export class EquipeListComponent implements OnInit {
       console.error(e);
     }
   }
-  
+
   onPageChange(page: number): void {
     this.store.loadUsers(page, 20);
   }

@@ -63,17 +63,28 @@
               </button>
             }
 
-          <button (click)="downloadPdf()"
+         <button (click)="downloadPdf()"
                   class="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
             <lucide-icon name="file-text" class="h-4 w-4"></lucide-icon>
             PDF
           </button>
+
+          <!-- SI LA FACTURE EST OUVERTE : On affiche le bouton Clôturer -->
           @if (!fact.cloture && (authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere())) {
             <button (click)="openCloseDialog()"
                     class="flex items-center gap-2 px-4 py-2 bg-fc-green hover:bg-fc-green-dark text-white text-sm font-medium rounded-lg transition-colors">
               <lucide-icon name="lock" class="h-4 w-4"></lucide-icon>
               Clôturer
             </button>
+          }
+
+          <!-- SI LA FACTURE EST CLÔTURÉE : On affiche le raccourci vers la caisse -->
+          @if (fact.cloture && (authStore.isPatron() || authStore.isSuperAdmin())) {
+             <a routerLink="/cloture"
+               class="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+              <lucide-icon name="calendar-check" class="h-4 w-4"></lucide-icon>
+              Aller à la Clôture Journalière
+            </a>
           }
         </div>
 

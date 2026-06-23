@@ -60,11 +60,13 @@ export class FournisseursListComponent implements OnInit {
     this.store.loadFournisseurs();
   }
 
-  openCreatePanel(): void {
-    // DIRECTIVE: Set fournisseurToEdit to null, open slide-over
-    // YOUR CODE HERE
-    this.fournisseurToEdit.set(null);
-    this.isSlideOverOpen.set(true);
+  openCreatePanel() {
+    // On force un changement d'état pour déclencher l'effect du formulaire
+    this.fournisseurToEdit.set({ id: -1 } as any); // Hack temporaire pour forcer le changement
+    setTimeout(() => {
+      this.fournisseurToEdit.set(null); // Le vrai reset
+      this.isSlideOverOpen.set(true);
+    }, 0);
   }
 
   openEditPanel(fournisseur: FournisseurResponse): void {

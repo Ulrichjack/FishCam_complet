@@ -1,5 +1,7 @@
 package com.fishcam.infrastructure.config;
 
+import com.fishcam.domain.fournisseur.Fournisseur;
+import com.fishcam.domain.fournisseur.FournisseurRepository;
 import com.fishcam.domain.poissonnerie.Poissonnerie;
 import com.fishcam.domain.poissonnerie.PoissonnerieRepository;
 import com.fishcam.domain.user.Role;
@@ -25,6 +27,8 @@ public class ProductionInitializer implements CommandLineRunner {
     private final PoissonnerieRepository poissonnerieRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FournisseurRepository fournisseurRepository;
+
 
     @Override
     public void run(String... args) {
@@ -36,7 +40,7 @@ public class ProductionInitializer implements CommandLineRunner {
             boutiqueCentrale.setAddress("La Petite mosquée");
             boutiqueCentrale.setPhone("676028800");
             boutiqueCentrale.setActive(true);
-            boutiqueCentrale.setPretActif(false); // NOUVEAU
+            boutiqueCentrale.setPretActif(true); // NOUVEAU
             boutiqueCentrale.setLoyer(BigDecimal.ZERO); // NOUVEAU
             boutiqueCentrale.setFondDeCaisseDefaut(BigDecimal.valueOf(10000)); // NOUVEAU
             poissonnerieRepository.save(boutiqueCentrale);
@@ -44,7 +48,7 @@ public class ProductionInitializer implements CommandLineRunner {
             Poissonnerie boutique2 = new Poissonnerie();
             boutique2.setName("FISH CAM - Boutique LELE");
             boutique2.setAddress("Adresse Boutique 2");
-            boutique2.setPhone("677000002");
+            boutique2.setPhone("695945293");
             boutique2.setActive(true);
             boutique2.setPretActif(false); // NOUVEAU
             boutique2.setLoyer(BigDecimal.ZERO); // NOUVEAU
@@ -54,7 +58,7 @@ public class ProductionInitializer implements CommandLineRunner {
             Poissonnerie boutique3 = new Poissonnerie();
             boutique3.setName("FISH CAM - Boutique BARE");
             boutique3.setAddress("Adresse Boutique 3");
-            boutique3.setPhone("677000003");
+            boutique3.setPhone("681885267");
             boutique3.setActive(true);
             boutique3.setPretActif(false); // NOUVEAU
             boutique3.setLoyer(BigDecimal.ZERO); // NOUVEAU
@@ -119,4 +123,14 @@ public class ProductionInitializer implements CommandLineRunner {
             userRepository.save(vendeur);
         }
     }
+
+    public void createFournisseur(){
+        Fournisseur f1 = new Fournisseur();
+        f1.setNom("CONGELCAM SA NKONG");
+        f1.setVille("Nkongsamba");
+        f1.setTelephone("670000000");
+        f1.setActif(true);
+        fournisseurRepository.save(f1);
+    }
+    
 }

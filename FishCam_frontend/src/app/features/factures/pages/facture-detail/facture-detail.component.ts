@@ -22,9 +22,16 @@ import { CreateEvaluationRequest } from '../../../livreurs/models/evaluation-req
   selector: 'app-facture-detail',
   standalone: true,
   imports: [
-    RouterLink, DatePipe,  ReactiveFormsModule,
-    LucideAngularModule, ConfirmDialogComponent, LigneFormComponent, CurrencyFcfaPipe,
-    StarRatingComponent, ModalComponent
+    RouterLink,
+    DatePipe, 
+    ReactiveFormsModule,
+    LucideAngularModule,
+    ConfirmDialogComponent,
+    LigneFormComponent, 
+    CurrencyFcfaPipe,
+    StarRatingComponent,
+    ModalComponent,
+    RouterLink
   ],
   templateUrl: './facture-detail.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -51,8 +51,11 @@ export class ProduitsListComponent implements OnInit {
   }
 
   openCreatePanel() {
-    this.produitToEdit.set(null);
-    this.isSlideOverOpen.set(true);
+    this.produitToEdit.set({ id: -1 } as any); // Hack temporaire pour forcer le changement
+    setTimeout(() => {
+      this.produitToEdit.set(null); // Le vrai reset
+      this.isSlideOverOpen.set(true);
+    }, 0);
   }
 
   openEditPanel(produit: ProduitResponse) {
