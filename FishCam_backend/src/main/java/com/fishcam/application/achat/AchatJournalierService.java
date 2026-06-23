@@ -267,10 +267,9 @@ public class AchatJournalierService {
     }
 
 
-    public DernierPrixResponse getDernierPrix(Long produitId, Long poissonnerieId) {
+   public DernierPrixResponse getDernierPrix(Long produitId, Long poissonnerieId) {
         Produit produit = produitRepository.findById(produitId)
-                .orElseThrow(() -> new ResourceNotFoundException(
-                        "Produit non trouvé avec l'id : " + produitId));
+                .orElseThrow(() -> new ResourceNotFoundException("Produit non trouvé"));
 
         Pageable pageable = PageRequest.of(0, 2);
         List<LigneAchat> results = ligneAchatRepository
@@ -285,8 +284,7 @@ public class AchatJournalierService {
         }
 
         LigneAchat lastPurchase = results.get(0);
-        // 🟢 MODIFIÉ ICI
-        response.setMontantCarton(lastPurchase.getMontantCarton());
+        response.setPrixUnitaireCarton(lastPurchase.getPrixUnitaireCarton()); // <-- LE BON GETTER
         response.setPrixVenteKilo(lastPurchase.getPrixVenteKilo());
 
         if (results.size() == 1) {
@@ -294,11 +292,9 @@ public class AchatJournalierService {
             response.setDifference(BigDecimal.ZERO);
         } else {
             LigneAchat previousPurchase = results.get(1);
-            // 🟢 MODIFIÉ ICI
-            response.setAncienMontantCarton(previousPurchase.getMontantCarton());
+            response.setAncienPrixUnitaireCarton(previousPurchase.getPrixUnitaireCarton()); // <-- LE BON GETTER
 
-            // 🟢 MODIFIÉ ICI : Calcul de la différence sur le prix unitaire
-            BigDecimal difference = lastPurchase.getMontantCarton().subtract(previousPurchase.getMontantCarton());
+            BigDecimal difference = lastPurchase.getPrixUnitaireCarton().subtract(previousPurchase.getPrixUnitaireCarton());
             response.setDifference(difference);
 
             int comparison = difference.compareTo(BigDecimal.ZERO);
@@ -310,10 +306,8 @@ public class AchatJournalierService {
                 response.setFluctuation(TypeFluctuation.STABLE);
             }
         }
-
         return response;
     }
-
     /**
      * Convertit une entité AchatJournalier en FactureResponse et calcule le total des achats.
      * @param facture L'entité AchatJournalier

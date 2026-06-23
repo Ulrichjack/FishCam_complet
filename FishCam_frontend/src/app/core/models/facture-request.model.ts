@@ -10,9 +10,9 @@ export interface CreateLigneRequest {
 
 export interface DernierPrixResponse{
   poidsParCarton: number;
-  montantCarton: number;
+  prixUnitaireCarton: number;
   prixVenteKilo: number;
-  ancienMontantCarton: number;
+  ancienPrixUnitaireCarton: number;
   difference: number;
   fluctuation: TypeFluctuation;
 

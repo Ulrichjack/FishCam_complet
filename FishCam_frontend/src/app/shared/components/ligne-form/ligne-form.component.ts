@@ -80,7 +80,7 @@ export class LigneFormComponent {
       const currentQty = this.ligneForm.value.quantiteCartons || 1;
 
       this.ligneForm.patchValue({
-        prixUnitaireCarton: dernierPrix.montantCarton,
+        prixUnitaireCarton: dernierPrix.prixUnitaireCarton,
         prixVenteKilo: dernierPrix.prixVenteKilo,
         // NOUVEAU : On calcule le poids total immédiatement
         poidsKg: produit.poidsParCarton * currentQty
