@@ -81,6 +81,10 @@
                         Clôturer
                       </button>
 
+                      
+                    }
+
+                    @if (facture.cloture && (authStore.isPatron() || authStore.isSuperAdmin() || authStore.isCaissiere())){
                       <a routerLink="/cloture"
                         class="flex items-center gap-2 px-4 py-2 bg-gray-900 hover:bg-black text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
                         <lucide-icon name="calendar-check" class="h-4 w-4"></lucide-icon>
