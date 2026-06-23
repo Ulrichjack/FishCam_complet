@@ -224,10 +224,17 @@
                 <td class="font-medium text-gray-900">{{ hist.date | date:'dd/MM/yyyy' }}</td>
                 <td class="text-gray-600">{{ hist.clotureParNom }}</td>
                 <td class=" font-medium text-gray-900">{{ hist.venteRealisee | currencyFcfa }}</td>
-                <td class=" font-bold" [class.text-fc-red]="hist.ecartVente < 0" [class.text-fc-green]="hist.ecartVente >= 0">
-                  {{ hist.ecartVente | currencyFcfa }}
+                <!-- Colonne Écart -->
+                <td class="font-bold text-right" 
+                    [ngClass]="{'text-fc-red': hist.ecartVente < 0, 'text-fc-green': hist.ecartVente >= 0}">
+                  {{ hist.ecartVente > 0 ? '+' : '' }}{{ hist.ecartVente | currencyFcfa }}
                 </td>
-                <td class=" font-bold text-fc-green">{{ hist.beneficeNet | currencyFcfa }}</td>
+                
+                <!-- Colonne Bénéfice Net -->
+                <td class="font-bold text-right" 
+                    [ngClass]="{'text-fc-red': hist.beneficeNet < 0, 'text-fc-green': hist.beneficeNet >= 0}">
+                  {{ hist.beneficeNet > 0 ? '+' : '' }}{{ hist.beneficeNet | currencyFcfa }}
+                </td>
               </tr>
             } @empty {
               <tr>

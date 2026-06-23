@@ -162,7 +162,11 @@ public class ClotureJournaliereService {
         BigDecimal ecartVente = venteRealisee.subtract(ventePrevisibleAjustee);
 
         // Bénéfice Net = Vente Réalisée - Achats - Dépenses
-        BigDecimal beneficeNet = venteRealisee.subtract(preparer.getTotalAchat()).subtract(totalDepenses);
+        BigDecimal beneficeNet = preparer.getTotalVentePrevisible()
+                .subtract(preparer.getTotalAchat())
+                .subtract(totalDepenses)
+                .add(ecartVente);
+                
         ClotureJournaliere cloture = clotureMapper.toEntity(request);
         cloture.setPoissonnerie(poissonnerie);
         cloture.setCloturePar(user);

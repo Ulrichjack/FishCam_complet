@@ -69,6 +69,7 @@
                 <th class="px-4 py-3 font-medium">Produit</th>
                 <th class="px-4 py-3 font-medium text-center">Qté</th>
                 <th class="px-4 py-3 font-medium text-right">Achat</th>
+                <th class="px-4 py-3 font-medium text-right">Prix Vente/Kg</th>
                 <th class="px-4 py-3 font-medium text-center">Action</th>
               </tr>
             </thead>
@@ -78,6 +79,7 @@
                   <td class="px-4 py-3 font-medium text-gray-900">{{ ligne.produitNom }}</td>
                   <td class="px-4 py-3 text-center">{{ ligne.quantiteCartons }}</td>
                   <td class="px-4 py-3 text-right">{{ ligne.montantCarton | number }}</td>
+                  <td class="px-4 py-3 text-right">{{ ligne.prixVenteKilo | number:'1.2-2' }}</td>
                   <td class="px-4 py-3 text-center">
                     <button (click)="removeLigne($index)" class="text-red-500 hover:text-red-700 p-1 rounded-md hover:bg-red-50 transition-colors">
                       <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>

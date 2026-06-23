@@ -3,7 +3,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe,  NgClass } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { ClotureStore } from '../../stores/cloture.store';
 import { AuthStore } from '../../../../core/stores/auth.store';
@@ -20,7 +20,8 @@ import { RouterLink } from '@angular/router';
     CurrencyFcfaPipe, 
     LucideAngularModule,
     ConfirmDialogComponent,
-    RouterLink
+    RouterLink,
+    NgClass
   ],
   templateUrl: './cloture-page.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush

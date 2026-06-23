@@ -26,6 +26,7 @@
           <th class="pb-3 font-medium">Produit</th>
           <th class="pb-3 font-medium text-center">Qté</th>
           <th class="pb-3 font-medium text-right">Achat</th>
+          <th class="pb-3 font-medium text-right">Vente Prév.</th>
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
@@ -37,12 +38,12 @@
             <td class="py-3 text-center text-gray-700">{{ ligne.quantiteCartons }}</td>
             <!-- En FCFA on n'affiche pas les décimales, donc on utilise juste le pipe number normal -->
             <td class="py-3 text-right font-medium text-gray-900">{{ ligne.montantCarton | currencyFcfa }}</td>
-          </tr>
+            <td class="py-3 text-right font-medium text-fc-green">{{ ligne.montantVentePrev | currencyFcfa }}</td>
         }
         <!-- Empty state if no lines -->
         @if (lignes().length === 0) {
           <tr>
-            <td colspan="3" class="py-8 text-center text-gray-400 italic">Aucun produit ajouté</td>
+            <td colspan="4" class="py-8 text-center text-gray-400 italic">Aucun produit ajouté</td>
           </tr>
         }
       </tbody>

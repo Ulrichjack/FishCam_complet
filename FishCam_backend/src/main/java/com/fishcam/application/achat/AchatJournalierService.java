@@ -9,6 +9,7 @@ import com.fishcam.adapter.web.dto.response.FactureResponse;
 import com.fishcam.adapter.web.dto.response.LigneAchatResponse;
 import com.fishcam.adapter.web.mapper.AchatMapper;
 import com.fishcam.domain.achat.*;
+import com.fishcam.domain.cloture.ClotureJournaliereRepository;
 import com.fishcam.domain.fournisseur.Fournisseur;
 import com.fishcam.domain.fournisseur.FournisseurRepository;
 import com.fishcam.domain.poissonnerie.Poissonnerie;
@@ -43,6 +44,7 @@ public class AchatJournalierService {
     private final FournisseurRepository fournisseurRepository;
     private final UserRepository userRepository;
     private final AchatMapper achatMapper;
+    private final ClotureJournaliereRepository clotureJournaliereRepository; 
 
 
     @LogAudit(action = "CREATE", entityName = "AchatJournalier")
@@ -52,9 +54,14 @@ public class AchatJournalierService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Poissonnerie non trouvée avec l'id : " + request.getPoissonnerieId()
                 ));
+       
         Fournisseur fournisseur = fournisseurRepository.findById(request.getFournisseurId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Fournisseur non trouvée avec l'id : " + request.getFournisseurId()));
+
+        if (clotureJournaliereRepository.existsByPoissonnerieAndDate(poissonnerie, request.getDateAchat())) {
+            throw new BusinessException("Impossible de créer une facture : la journée du " + request.getDateAchat() + " est déjà clôturée pour cette boutique.");
+        }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException(
