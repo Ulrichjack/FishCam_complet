@@ -265,7 +265,6 @@ public class AchatJournalierService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Produit non trouvé avec l'id : " + produitId));
 
-        // 1. Fetch the last TWO purchases (PageRequest.of(0, 2))
         Pageable pageable = PageRequest.of(0, 2);
         List<LigneAchat> results = ligneAchatRepository
                 .findLatestPricesByProduitAndPoissonnerie(produitId, poissonnerieId, pageable);
@@ -273,32 +272,28 @@ public class AchatJournalierService {
         DernierPrixResponse response = new DernierPrixResponse();
         response.setPoidsParCarton(produit.getPoidsParCarton());
 
-        // 2. If the product was NEVER bought before
         if (results.isEmpty()) {
             response.setFluctuation(TypeFluctuation.NOUVEAU);
             return response;
         }
 
-        // 3. Get the most recent purchase
         LigneAchat lastPurchase = results.get(0);
-        response.setMontantCarton(lastPurchase.getMontantCarton());
+        // 🟢 MODIFIÉ ICI
+        response.setMontantCarton(lastPurchase.getPrixUnitaireCarton());
         response.setPrixVenteKilo(lastPurchase.getPrixVenteKilo());
 
-        // 4. Compare with the previous purchase
         if (results.size() == 1) {
-            // It was only bought ONCE in history.
             response.setFluctuation(TypeFluctuation.NOUVEAU);
             response.setDifference(BigDecimal.ZERO);
         } else {
-            // We have a previous purchase!
             LigneAchat previousPurchase = results.get(1);
+            // 🟢 MODIFIÉ ICI
             response.setAncienMontantCarton(previousPurchase.getMontantCarton());
 
-            // Calculate the difference: (Today's Price) - (Yesterday's Price)
+            // 🟢 MODIFIÉ ICI : Calcul de la différence sur le prix unitaire
             BigDecimal difference = lastPurchase.getMontantCarton().subtract(previousPurchase.getMontantCarton());
             response.setDifference(difference);
 
-            // Determine if it went UP, DOWN, or stayed STABLE
             int comparison = difference.compareTo(BigDecimal.ZERO);
             if (comparison > 0) {
                 response.setFluctuation(TypeFluctuation.HAUSSE);
