@@ -122,7 +122,7 @@ public class ClotureJournaliereService {
         if (request.getDate().isAfter(LocalDate.now())) {
             throw new BusinessException("Impossible de clôturer une journée dans le futur.");
         }
-        
+
         Poissonnerie poissonnerie = poissonnerieRepository.findById(request.getPoissonnerieId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Poissonnerie non trouvée avec l'id : " + request.getPoissonnerieId()
@@ -175,11 +175,9 @@ public class ClotureJournaliereService {
         cloture.setMontantRembourseJour(preparer.getMontantRembourseJour());
         cloture.setNombreDettesJour(preparer.getNombreDettesJour());
         cloture.setEcartVente(ecartVente);
-        
+
         ClotureJournaliere saved = clotureJournaliereRepository.save(cloture);
-        ClotureJournaliereResponse response = clotureMapper.toResponse(saved);
-        response.setEcartVente(ecartVente);
-        return response;
+        return clotureMapper.toResponse(saved);
     }
 
     public ClotureJournaliereResponse getCloture(Long poissonnerieId, LocalDate date){
