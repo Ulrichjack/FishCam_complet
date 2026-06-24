@@ -1,7 +1,6 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output, signal, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { NgClass } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { ProduitResponse } from '../../../core/models/produit.model';
 import { CreateLigneRequest, DernierPrixResponse } from '../../../core/models/facture-request.model';
@@ -33,9 +32,8 @@ export class LigneFormComponent {
   montantCalcule = signal<number>(0);
   isLoadingPrix = signal<boolean>(false);
   dernierPrix = signal<DernierPrixResponse | null>(null);
-
-  // NOUVEAU : On stocke le poids d'un seul carton en mémoire
   poidsUnitaireCarton = signal<number>(0);
+  @ViewChild(ProductAutocompleteComponent) autocompleteComponent!: ProductAutocompleteComponent;
 
   ligneForm: FormGroup = this.fb.group({
     produitId: [null, Validators.required],
@@ -107,7 +105,12 @@ export class LigneFormComponent {
       this.ligneForm.reset({ quantiteCartons: 1 });
       this.selectedProduitNom.set('');
       this.montantCalcule.set(0);
-      this.poidsUnitaireCarton.set(0); // On réinitialise le poids unitaire
+      this.poidsUnitaireCarton.set(0);
+      
+      // 🟢 NOUVEAU : On vide le texte de la barre de recherche !
+      if (this.autocompleteComponent) {
+        this.autocompleteComponent.searchQuery.set('');
+      }
     }
   }
 }
