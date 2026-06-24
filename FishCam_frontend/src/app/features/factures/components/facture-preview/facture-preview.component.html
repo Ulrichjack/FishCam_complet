@@ -47,11 +47,25 @@
           </tr>
         }
       </tbody>
+       <!-- 🟢 NOUVEAU : Les totaux alignés sous les colonnes -->
+      <tfoot class="bg-gray-50 border-t-2 border-gray-200">
+        <tr>
+          <td colspan="2" class="py-3 pr-4 text-right font-bold text-gray-500 uppercase text-xs">Totaux</td>
+          <td class="py-3 text-right font-bold text-gray-900">{{ totalAchat() | currencyFcfa }}</td>
+          <td class="py-3 text-right font-bold text-gray-900">{{ totalVente() | currencyFcfa }}</td>
+        </tr>
+        <tr>
+          <td colspan="3" class="py-3 pr-4 text-right font-bold text-gray-900">Bénéfice Prévu</td>
+          <td class="py-3 text-right font-bold" [ngClass]="{'text-fc-green': benefice() > 0, 'text-fc-red': benefice() < 0}"> 
+             {{ benefice() > 0 ? '+' : '' }}{{ benefice() | currencyFcfa }} 
+          </td>
+        </tr>
+      </tfoot>
     </table>
   </div>
 
   <!-- Totaux -->
-  <div class="bg-gray-50 p-6 border-t border-gray-200 space-y-3">
+  <!-- <div class="bg-gray-50 p-6 border-t border-gray-200 space-y-3">
     <div class="flex justify-between text-sm">
       <span class="text-gray-600">Total Achat</span>
       <span class="font-bold text-gray-900">  {{ totalAchat() | currencyFcfa }} </span>
@@ -62,11 +76,10 @@
     </div>
     <div class="flex justify-between pt-3 border-t border-gray-200">
       <span class="font-bold text-gray-900">Bénéfice Prévu</span>
-      <!-- DIRECTIVE: Bind benefice() and use [ngClass] to make it green if > 0, red if < 0 -->
-      <span class="font-bold" [ngClass]="{'text-fc-green': benefice() > 0, 'text-fc-red': benefice() < 0}"> 
-         {{ benefice() > 0 ? '+' : '' }}{{ benefice() | currencyFcfa }} 
-      </span>
-    </div>
-  </div>
+        <span class="font-bold" [ngClass]="{'text-fc-green': benefice() > 0, 'text-fc-red': benefice() < 0}"> 
+          {{ benefice() > 0 ? '+' : '' }}{{ benefice() | currencyFcfa }} 
+        </span>
+      </div>
+    </div> -->
 
 </div>

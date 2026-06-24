@@ -38,10 +38,20 @@
 - **Objectif :** Vérifier que l'algorithme de calcul des écarts de caisse est exact.
 - **Résultat attendu :** L'écart de caisse reflète parfaitement l'argent physique, incluant les dettes et remboursements.
 - **Statut :** ✅ Validé
-- **Observations :** La formule `Vente Réalisée = Caisse Physique - Fond de Caisse + Dépenses` couplée à `Vente Prévisible Ajustée = Ventes - Emprunts + Remboursements` fonctionne parfaitement. Les tests avec des emprunts et remboursements croisés donnent un écart de 0 FCFA lorsque la caisse est juste.
+- **Observations :** Bug détecté : Le backend calculait l'écart mais omettait de l'affecter à l'entité avant le save(), ce qui renvoyait toujours 0 dans l'historique. Correction : Ajout de cloture.setEcartVente(ecartVente);. L'historique affiche désormais les manquants et surplus exacts.
 
 ## 6. Test d'Auto-Sauvegarde et Résilience Cloud
 - **Objectif :** Vérifier que le système sauvegarde automatiquement les données sur Cloudflare R2 en cas de retard, et gère les pannes internet.
 - **Résultat attendu :** Sauvegarde silencieuse en arrière-plan, ou affichage d'une bannière d'alerte si hors-ligne.
 - **Statut :** ✅ Validé
 - **Observations :** Si la sauvegarde est en retard et qu'internet est coupé, une bannière rouge globale s'affiche. Dès que la connexion est rétablie, le système lance la sauvegarde en arrière-plan (sans bloquer l'utilisateur) et fait disparaître la bannière au succès. Les erreurs 500 dues aux coupures réseau pendant l'auto-sauvegarde sont ignorées silencieusement.
+
+## 7. Test de Cohérence du Bénéfice Net avec Dettes (Bug Fixé)
+- **Objectif :** Vérifier que le bénéfice net n'est pas faussé par les emprunts ou les remboursements.
+- **Statut :** ✅ Validé (Après correction)
+- **Observations :** Bug détecté : Le système soustrayait les dettes du bénéfice, affichant une fausse perte financière. Correction : Application de la formule comptable stricte : Bénéfice = Vente Prévisible - Achat - Dépenses + Écart. Le système calcule désormais la rentabilité réelle indépendamment des mouvements de trésorerie.
+
+## 8. Test d'Agrégation Mensuelle (Bilan & Statistiques)
+- **Objectif :** Vérifier que le Dashboard additionne correctement les données journalières.
+- **Statut :** ✅ Validé
+- **Observations :** Testé sur 6 jours simulés. Les totaux (Achats: 640k, Ventes: 665.2k, Bénéfice: 41.7k) sont mathématiquement parfaits. L'identification des produits les plus rentables fonctionne.
