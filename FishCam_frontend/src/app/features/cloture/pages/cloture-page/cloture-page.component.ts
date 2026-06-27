@@ -15,9 +15,9 @@ import { RouterLink } from '@angular/router';
   selector: 'app-cloture-page',
   standalone: true,
   imports: [
-    ReactiveFormsModule, 
-    DatePipe, 
-    CurrencyFcfaPipe, 
+    ReactiveFormsModule,
+    DatePipe,
+    CurrencyFcfaPipe,
     LucideAngularModule,
     ConfirmDialogComponent,
     RouterLink,
@@ -27,7 +27,7 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CloturePageComponent implements OnInit {
-  
+
   readonly store = inject(ClotureStore);
   readonly authStore = inject(AuthStore);
   private readonly fb = inject(FormBuilder);
@@ -65,7 +65,7 @@ export class CloturePageComponent implements OnInit {
   readonly ecart = computed(() => {
     const { argentCaisse, fondDeCaisse, transport, ration, autresFrais } = this.formValues();
     const preparation = this.store.preparation();
-    
+
     const totalVentePrevisible = preparation ? preparation.totalVentePrevisible : 0;
     // 🟢 CORRECTION DU BUG : On récupère les dettes et remboursements
     const dettes = preparation ? preparation.montantDettesJour : 0;
@@ -73,7 +73,7 @@ export class CloturePageComponent implements OnInit {
 
     // 1. Calculer le total des dépenses
     const totalDepenses = (transport || 0) + (ration || 0) + (autresFrais || 0);
-    
+
     // 2. 🟢 CORRECTION DU BUG : Calculer combien d'argent il DEVRAIT y avoir dans le tiroir
     const caisseTheorique = (fondDeCaisse || 0) + totalVentePrevisible - dettes + remboursements - totalDepenses;
 
@@ -83,9 +83,18 @@ export class CloturePageComponent implements OnInit {
 
   // Ajoute ceci juste en dessous de "readonly ecart = computed(...)"
   readonly isAlreadyClosed = computed(() => {
-    const date = this.selectedDate(); // ex: "2026-05-08"
-    return this.store.historique().some(h => h.date.startsWith(date));
+    const date = this.selectedDate();
+    const page = this.store.historiquePage();
+    if (!page || !page.content) return false;
+    return page.content.some(h => h.date.startsWith(date));
   });
+
+  onPageChange(page: number) {
+    const poissonnerieId = this.authStore.activePoissonnerieId();
+    if (poissonnerieId) {
+      this.store.loadPageData(poissonnerieId, this.selectedDate(), page);
+    }
+  }
 
   constructor() {
     // DIRECTIVE: 4. Use an effect to auto-fill "fondDeCaisse" when store.preparation() loads
@@ -106,7 +115,7 @@ export class CloturePageComponent implements OnInit {
   loadData(): void {
     const poissonnerieId = this.authStore.activePoissonnerieId();
     if (poissonnerieId) {
-      this.store.loadPageData(poissonnerieId, this.selectedDate()); 
+      this.store.loadPageData(poissonnerieId, this.selectedDate());
     }
   }
 
@@ -127,10 +136,6 @@ export class CloturePageComponent implements OnInit {
   async submitCloture() {
     const poissonnerieId = this.authStore.activePoissonnerieId();
     if (!poissonnerieId || this.clotureForm.invalid) return;
-
-    // DIRECTIVE: 5. Call this.store.submitCloture(...) with the form values + date + poissonnerieId
-    // Then close the confirm dialog and reset the form (keep fondDeCaisse)
-    // YOUR CODE HERE
     const formValues = this.clotureForm.value;
     const request = {
       poissonnerieId,
@@ -145,6 +150,6 @@ export class CloturePageComponent implements OnInit {
     await this.store.submitCloture(request);
     this.isConfirmOpen.set(false);
     // Reset form but keep fondDeCaisse
-    this.clotureForm.reset({ fondDeCaisse: formValues.fondDeCaisse });  
+    this.clotureForm.reset({ fondDeCaisse: formValues.fondDeCaisse });
   }
 }

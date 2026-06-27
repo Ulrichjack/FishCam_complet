@@ -6,10 +6,10 @@
       <h1 class="text-2xl font-bold text-gray-900">Clôture Journalière</h1>
       <p class="text-sm text-gray-500 mt-1">Vérifiez les ventes et enregistrez la caisse physique.</p>
     </div>
-    
+
     <div class="flex items-center gap-3 bg-white p-2 rounded-lg border border-gray-200 shadow-sm">
       <lucide-icon name="calendar" class="h-5 w-5 text-gray-400 ml-2"></lucide-icon>
-      <input type="date" [value]="selectedDate()" (change)="onDateChange($event)" 
+      <input type="date" [value]="selectedDate()" (change)="onDateChange($event)"
              class="border-none focus:ring-0 text-sm font-medium text-gray-700 outline-none cursor-pointer bg-transparent">
     </div>
   </div>
@@ -27,7 +27,7 @@
   } @else if (store.preparation(); as prep) {
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      
+
       <!-- COLONNE GAUCHE : RÉSUMÉ DU SYSTÈME -->
       <div class="flex flex-col gap-6">
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
@@ -38,7 +38,7 @@
             </h2>
           </div>
           <div class="p-6 flex flex-col gap-4">
-            
+
             <div class="flex justify-between items-center pb-4 border-b border-gray-100">
               <span class="text-gray-600">Total Achats du jour</span>
               <span class="font-semibold text-gray-900">{{ prep.totalAchat | currencyFcfa }}</span>
@@ -65,10 +65,10 @@
         <!-- CARTE ÉCART EN TEMPS RÉEL OU HISTORIQUE -->
         <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6 flex flex-col items-center text-center">
           <p class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-2">Écart de Caisse</p>
-          
+
           @if (isAlreadyClosed()) {
             <!-- SI DÉJÀ CLÔTURÉ : On cherche l'écart dans l'historique -->
-            @for (hist of store.historique(); track hist.id) {
+            @for (hist of store.historiquePage()?.content; track hist.id) {
               @if (hist.date === selectedDate()) {
                 @if (hist.ecartVente === 0) {
                   <div class="text-fc-green flex items-center gap-2">
@@ -124,7 +124,7 @@
             Saisie de la Caisse Physique
           </h2>
         </div>
-        
+
         @if (isAlreadyClosed()) {
           <!-- MESSAGE SI DÉJÀ CLÔTURÉ -->
           <div class="p-12 flex flex-col items-center text-center">
@@ -136,7 +136,7 @@
           </div>
         } @else {
             <form [formGroup]="clotureForm" (ngSubmit)="openConfirm()" class="p-6 flex flex-col gap-5">
-              
+
               <!-- Argent en caisse -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-1">Argent total en caisse (FCFA) *</label>
@@ -191,7 +191,7 @@
           }
 
 
-              <button type="submit" [disabled]="clotureForm.invalid || store.isLoading() || prep.facturesNonCloturees > 0" 
+              <button type="submit" [disabled]="clotureForm.invalid || store.isLoading() || prep.facturesNonCloturees > 0"
                       class="mt-4 w-full bg-fc-green hover:bg-fc-green-dark text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center gap-2">
                 <lucide-icon name="lock" class="h-5 w-5"></lucide-icon>
                 Clôturer la journée
@@ -219,19 +219,19 @@
             </tr>
           </thead>
           <tbody>
-            @for (hist of store.historique(); track hist.id) {
+            @for (hist of store.historiquePage()?.content; track hist.id) {
               <tr>
                 <td class="font-medium text-gray-900">{{ hist.date | date:'dd/MM/yyyy' }}</td>
                 <td class="text-gray-600">{{ hist.clotureParNom }}</td>
                 <td class=" font-medium text-gray-900">{{ hist.venteRealisee | currencyFcfa }}</td>
                 <!-- Colonne Écart -->
-                <td class="font-bold " 
+                <td class="font-bold "
                     [ngClass]="{'text-fc-red': hist.ecartVente < 0, 'text-fc-green': hist.ecartVente >= 0}">
                   {{ hist.ecartVente > 0 ? '+' : '' }}{{ hist.ecartVente | currencyFcfa }}
                 </td>
-                
+
                 <!-- Colonne Bénéfice Net -->
-                <td class="font-bold " 
+                <td class="font-bold "
                     [ngClass]="{'text-fc-red': hist.beneficeNet < 0, 'text-fc-green': hist.beneficeNet >= 0}">
                   {{ hist.beneficeNet > 0 ? '+' : '' }}{{ hist.beneficeNet | currencyFcfa }}
                 </td>
@@ -244,6 +244,21 @@
           </tbody>
         </table>
       </div>
+       @if (store.historiquePage(); as page) {
+        <div class="flex items-center justify-between p-4 border-t border-gray-200 bg-white">
+          <p class="text-sm text-gray-500">
+            Page {{ (page.page?.number ?? page.number ?? 0) + 1 }} sur {{ page.page?.totalPages ?? page.totalPages ?? 1 }}
+          </p>
+          <div class="flex gap-2">
+            <button (click)="onPageChange((page.number || 0) - 1)" [disabled]="page.first" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+              <lucide-icon name="chevron-left" class="h-4 w-4"></lucide-icon>
+            </button>
+            <button (click)="onPageChange((page.number || 0) + 1)" [disabled]="page.last" class="p-1.5 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors">
+              <lucide-icon name="chevron-right" class="h-4 w-4"></lucide-icon>
+            </button>
+          </div>
+        </div>
+      }
     </div>
 
   }

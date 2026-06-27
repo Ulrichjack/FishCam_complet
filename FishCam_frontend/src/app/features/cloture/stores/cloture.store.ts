@@ -5,6 +5,7 @@ import { ClotureService } from "../services/cloture.service";
 import { firstValueFrom } from "rxjs";
 import { ClotureJournaliereRequest, ClotureJournaliereResponse, PreparationClotureResponse } from "../../../core/models/cloture.model";
 import { ToastService } from "../../../core/services/toast.service";
+import { PageResponse } from "../../../core/models/api-response.model";
 
 @Injectable({ providedIn: 'root' })
 export class ClotureStore {
@@ -13,29 +14,28 @@ export class ClotureStore {
 
   // --- STATE SIGNALS ---
   private _preparation = signal<PreparationClotureResponse | null>(null);
-  private _historique = signal<ClotureJournaliereResponse[]>([]);
+  private _historiquePage = signal<PageResponse<ClotureJournaliereResponse> | null>(null);
   private _isLoading = signal<boolean>(false);
   private _error = signal<string | null>(null);
 
   // --- READONLY SIGNALS ---
   readonly preparation = this._preparation.asReadonly();
-  readonly historique = this._historique.asReadonly();
+  readonly historiquePage = this._historiquePage.asReadonly();
   readonly isLoading = this._isLoading.asReadonly();
   readonly error = this._error.asReadonly();
 
   // --- ACTIONS ---
 
-  async loadPageData(poissonnerieId: number, date: string) {
+  async loadPageData(poissonnerieId: number, date: string, page: number = 0) {
     this._isLoading.set(true);
     this._error.set(null);
     try {
-      // On lance les deux requêtes en parallèle (plus rapide et un seul loading)
       const [prepRes, histRes] = await Promise.all([
         firstValueFrom(this.clotureService.preparerCloture(poissonnerieId, date)),
-        firstValueFrom(this.clotureService.getHistorique(poissonnerieId))
+        firstValueFrom(this.clotureService.getHistorique(poissonnerieId, page)) // <-- Ajout de page
       ]);
       this._preparation.set(prepRes.data);
-      this._historique.set(histRes.data);
+      this._historiquePage.set(histRes.data); // <-- Modifié
     } catch (error: any) {
       this._error.set(error.message || 'Erreur lors du chargement des données.');
     } finally {
@@ -43,19 +43,19 @@ export class ClotureStore {
     }
   }
 
-  // (Garde la fonction submitCloture, mais modifie-la pour qu'elle appelle le endpoint d'historique directement)
+  // 3. Modifie submitCloture
   async submitCloture(request: ClotureJournaliereRequest) {
     this._isLoading.set(true);
     this._error.set(null);
     try {
       await firstValueFrom(this.clotureService.cloturer(request));
-      // Après la clôture, on recharge juste l'historique manuellement
-      const histRes = await firstValueFrom(this.clotureService.getHistorique(request.poissonnerieId));
-      this._historique.set(histRes.data);
+      // On recharge la page 0 de l'historique
+      const histRes = await firstValueFrom(this.clotureService.getHistorique(request.poissonnerieId, 0));
+      this._historiquePage.set(histRes.data);
       this.toastService.success('Journée clôturée avec succès !');
     } catch (error: any) {
       this._error.set(error.message || 'Erreur lors de la clôture.');
-      throw error; // Important de jeter l'erreur pour ne pas fermer la modale si ça plante
+      throw error;
     } finally {
       this._isLoading.set(false);
     }

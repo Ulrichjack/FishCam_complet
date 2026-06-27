@@ -21,6 +21,8 @@ import com.fishcam.infrastructure.aop.LogAudit;
 import com.fishcam.infrastructure.exception.BusinessException;
 import com.fishcam.infrastructure.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -166,7 +168,7 @@ public class ClotureJournaliereService {
                 .subtract(preparer.getTotalAchat())
                 .subtract(totalDepenses)
                 .add(ecartVente);
-                
+
         ClotureJournaliere cloture = clotureMapper.toEntity(request);
         cloture.setPoissonnerie(poissonnerie);
         cloture.setCloturePar(user);
@@ -192,12 +194,11 @@ public class ClotureJournaliereService {
         return clotureMapper.toResponse(clotureJournaliere);
     }
 
-    public List<ClotureJournaliereResponse> getHistorique(Long poissonnerieId){
+    public Page<ClotureJournaliereResponse> getHistorique(Long poissonnerieId, Pageable pageable) {
         Poissonnerie poissonnerie = poissonnerieRepository.findById(poissonnerieId)
                 .orElseThrow(() -> new ResourceNotFoundException("Poissonnerie non trouvée avec l'id : " + poissonnerieId));
-        return clotureJournaliereRepository.findByPoissonnerieOrderByDateDesc(poissonnerie)
-                .stream()
-                .map(clotureMapper::toResponse)
-                .toList();
+
+        Page<ClotureJournaliere> page = clotureJournaliereRepository.findByPoissonnerieOrderByDateDesc(poissonnerie, pageable);
+        return page.map(clotureMapper::toResponse);
     }
 }
